@@ -516,19 +516,21 @@ export default function App() {
         // Carregar contas quando já está logado
         api.get('/api/meta/ad-accounts').then(res => {
           console.log('Ad accounts response:', res);
-          if (res.success && res.accounts?.length > 0) {
-            setAccounts(res.accounts);
-            if (savedAccount && res.accounts.some(a => a.id === savedAccount)) {
+          // Backend retorna "adAccounts" não "accounts"
+          const accountsList = res.adAccounts || res.accounts || [];
+          if (res.success && accountsList.length > 0) {
+            setAccounts(accountsList);
+            if (savedAccount && accountsList.some(a => a.id === savedAccount)) {
               setSelectedAccount(savedAccount);
             } else {
-              const firstAccount = res.accounts[0].id;
+              const firstAccount = accountsList[0].id;
               setSelectedAccount(firstAccount);
               localStorage.setItem('adbrain_account', firstAccount);
             }
           } else if (res.error) {
             console.error('Erro ao carregar contas:', res.error);
             setError('Erro ao carregar contas: ' + res.error);
-          } else if (!res.accounts || res.accounts.length === 0) {
+          } else if (accountsList.length === 0) {
             console.warn('Nenhuma conta encontrada:', res);
             setError('Nenhuma conta de anúncios encontrada. Verifique as permissões do token.');
           }
@@ -553,7 +555,16 @@ export default function App() {
     setLoading(false);
   };
 
-  const loadAccounts = async () => { const res = await api.get('/api/meta/ad-accounts'); if (res.success && res.accounts?.length > 0) { setAccounts(res.accounts); const first = res.accounts[0].id; setSelectedAccount(first); localStorage.setItem('adbrain_account', first); } };
+  const loadAccounts = async () => { 
+    const res = await api.get('/api/meta/ad-accounts'); 
+    const accountsList = res.adAccounts || res.accounts || [];
+    if (res.success && accountsList.length > 0) { 
+      setAccounts(accountsList); 
+      const first = accountsList[0].id; 
+      setSelectedAccount(first); 
+      localStorage.setItem('adbrain_account', first); 
+    } 
+  };
 
   const loadAds = async () => {
     if (!selectedAccount) return;
