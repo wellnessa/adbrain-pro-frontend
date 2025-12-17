@@ -502,20 +502,24 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 
 /* Cards Grid */
 .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.creative-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; transition: all 0.2s ease; cursor: pointer; }
+.creative-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; transition: all 0.2s ease; cursor: pointer; }
 .creative-card:hover { border-color: var(--border-muted); transform: translateY(-2px); }
 .creative-card.top-performer { border-color: rgba(16,185,129,0.3); background: linear-gradient(135deg, var(--bg-subtle) 0%, rgba(16,185,129,0.05) 100%); }
 .creative-card.warning { border-color: rgba(245,158,11,0.3); }
 .creative-card.critical { border-color: rgba(239,68,68,0.3); }
-.card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.card-thumbnail { width: 100%; height: 140px; background: var(--bg-muted); overflow: hidden; }
+.card-thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+.creative-card:hover .card-thumbnail img { transform: scale(1.05); }
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 16px 0; }
+.creative-card:not(:has(.card-thumbnail)) .card-header { padding-top: 16px; }
 .card-score { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
 .card-badge { padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 .card-badge.success { background: var(--accent-primary-muted); color: var(--accent-primary); }
 .card-badge.warning { background: var(--accent-warning-muted); color: var(--accent-warning); }
 .card-badge.danger { background: var(--accent-danger-muted); color: var(--accent-danger); }
-.card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-subtitle { font-size: 11px; color: var(--text-muted); }
-.card-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+.card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px; }
+.card-subtitle { font-size: 11px; color: var(--text-muted); padding: 0 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 16px 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
 .card-metric { text-align: center; }
 .card-metric-value { font-size: 13px; font-weight: 600; }
 .card-metric-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
@@ -827,9 +831,16 @@ function CreativeCard({ ad, rank }) {
   const score = ad.score?.total ?? ad.score ?? 0;
   const status = AIEngine.getStatus(score);
   const fatigueLevel = ins.frequency > 4 ? 'critical' : ins.frequency > 2.5 ? 'warning' : 'healthy';
+  const imageUrl = ad.creative?.imageUrl || ad.creative?.thumbnail_url || null;
   
   return (
     <div className={`creative-card ${rank <= 3 ? 'top-performer' : fatigueLevel !== 'healthy' ? fatigueLevel : ''}`}>
+      {/* Thumbnail do Criativo */}
+      {imageUrl && (
+        <div className="card-thumbnail">
+          <img src={imageUrl} alt={ad.name} />
+        </div>
+      )}
       <div className="card-header">
         <div className="card-score" style={{ background: status.bg, color: status.color }}>{score}</div>
         <div>
@@ -839,7 +850,7 @@ function CreativeCard({ ad, rank }) {
         </div>
       </div>
       <div className="card-title">{ad.name || 'Sem nome'}</div>
-      <div className="card-subtitle">{ad.adset_name || 'Conjunto padrão'}</div>
+      <div className="card-subtitle">{ad.creative?.title || ad.adset_name || 'Conjunto padrão'}</div>
       <div className="card-metrics">
         <div className="card-metric">
           <div className="card-metric-value" style={{ color: ins.cpa && ins.cpa <= AIEngine.config.metaCPA ? 'var(--accent-primary)' : ins.cpa > AIEngine.config.metaCPA * 1.5 ? 'var(--accent-danger)' : 'inherit' }}>
