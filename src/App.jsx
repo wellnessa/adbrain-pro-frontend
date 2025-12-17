@@ -62,6 +62,7 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     lightbulb: <><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></>,
     sliders: <><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></>,
     link: <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>,
+    trophy: <><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>{icons[name] || icons.alertCircle}</svg>;
 };
@@ -354,6 +355,13 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
 .empty-text { font-size: 13px; color: var(--text-muted); }
 
+.table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); }
+.table { width: 100%; border-collapse: collapse; background: var(--bg-subtle); }
+.table th { text-align: left; padding: 12px 16px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-subtle); background: var(--bg-muted); }
+.table td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border-subtle); }
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--bg-hover); }
+
 @media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 50px 1fr 85px 85px 100px; } }
 @media (max-width: 1200px) { .settings-grid { grid-template-columns: 1fr; } .score-breakdown { grid-template-columns: repeat(2, 1fr); } }
 `;
@@ -486,6 +494,8 @@ export default function App() {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authName, setAuthName] = useState('');
+  const [ads, setAds] = useState([]);
+  const [loadingAds, setLoadingAds] = useState(false);
 
   const dateOptions = [
     { value: 'today', label: 'Hoje' }, { value: 'yesterday', label: 'Ontem' }, { value: 'last_7d', label: 'Últimos 7 dias' },
@@ -497,7 +507,26 @@ export default function App() {
     const savedUser = localStorage.getItem('adbrain_user');
     const savedToken = localStorage.getItem('adbrain_meta_token');
     const savedAccount = localStorage.getItem('adbrain_account');
-    if (savedUser) { setUser(JSON.parse(savedUser)); setPage('campaigns'); if (savedToken) { setToken(savedToken); setConnected(true); if (savedAccount) setSelectedAccount(savedAccount); } }
+    if (savedUser) { 
+      setUser(JSON.parse(savedUser)); 
+      setPage('campaigns'); 
+      if (savedToken) { 
+        setToken(savedToken); 
+        setConnected(true); 
+        // Carregar contas quando já está logado
+        api.get('/api/meta/ad-accounts').then(res => {
+          if (res.success && res.accounts?.length > 0) {
+            setAccounts(res.accounts);
+            if (savedAccount) {
+              setSelectedAccount(savedAccount);
+            } else {
+              setSelectedAccount(res.accounts[0].id);
+              localStorage.setItem('adbrain_account', res.accounts[0].id);
+            }
+          }
+        });
+      }
+    }
   }, []);
 
   useEffect(() => { if (connected && selectedAccount) loadData(); }, [connected, selectedAccount, dateRange]);
@@ -515,9 +544,29 @@ export default function App() {
 
   const loadAccounts = async () => { const res = await api.get('/api/meta/ad-accounts'); if (res.success && res.accounts?.length > 0) { setAccounts(res.accounts); const first = res.accounts[0].id; setSelectedAccount(first); localStorage.setItem('adbrain_account', first); } };
 
+  const loadAds = async () => {
+    if (!selectedAccount) return;
+    setLoadingAds(true);
+    try {
+      const res = await api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`);
+      if (res.success) {
+        const adsWithAnalysis = (res.ads || []).map(ad => ({
+          ...ad,
+          score: AIEngine.calcScore({ insights: ad.insights }),
+          fatigueLevel: ad.insights?.frequency > 4 ? 'critical' : ad.insights?.frequency > 2.5 ? 'warning' : 'healthy'
+        }));
+        setAds(adsWithAnalysis.sort((a, b) => (b.score?.total || 0) - (a.score?.total || 0)));
+      }
+    } catch (e) { console.error('Erro ao carregar ads:', e); }
+    setLoadingAds(false);
+  };
+
+  // Carregar ads quando mudar para página de criativos
+  useEffect(() => { if (page === 'creatives' && connected && selectedAccount) loadAds(); }, [page, selectedAccount, dateRange]);
+
   const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao fazer login'); };
   const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
-  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setPage('login'); };
+  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setAds([]); setPage('login'); };
   const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
   const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
   const handleAction = async (action, campaignId) => {
@@ -588,6 +637,7 @@ export default function App() {
               <div className="nav-group-label">Menu</div>
               <div className={`nav-item ${page === 'dashboard' ? 'active' : ''}`} onClick={() => setPage('dashboard')}><Icon name="layoutDashboard" size={18} />Dashboard</div>
               <div className={`nav-item ${page === 'campaigns' ? 'active' : ''}`} onClick={() => setPage('campaigns')}><Icon name="target" size={18} />Campanhas{filterCounts.critical > 0 && <span className="nav-badge">{filterCounts.critical}</span>}</div>
+              <div className={`nav-item ${page === 'creatives' ? 'active' : ''}`} onClick={() => setPage('creatives')}><Icon name="image" size={18} />Criativos</div>
               <div className={`nav-item ${page === 'audience' ? 'active' : ''}`} onClick={() => setPage('audience')}><Icon name="users" size={18} />Público</div>
               <div className={`nav-item ${page === 'insights' ? 'active' : ''}`} onClick={() => setPage('insights')}><Icon name="sparkles" size={18} />Insights IA</div>
             </div>
@@ -601,7 +651,7 @@ export default function App() {
 
         <main className="main-content">
           <header className="header">
-            <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : 'Visão geral'}</p></div></div>
+            <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : page === 'creatives' ? 'Criativos' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Análise de performance dos anúncios' : 'Visão geral'}</p></div></div>
             <div className="header-right">
               {connected && accounts.length > 0 && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
               <div className="select-wrap"><select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>{dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>
@@ -680,6 +730,189 @@ export default function App() {
                 <div className="issues-grid" style={{marginBottom:28}}>{campaigns.flatMap(c => (c.analysis?.issues || []).map((issue,i) => <div key={`${c.id}-${i}`} className={`issue-card ${issue.severity}`}><div className="issue-icon"><Icon name={issue.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{issue.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {issue.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.issues?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="checkCircle" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Nenhum problema detectado.</div></div>}</div>
                 <h3 style={{fontSize:15,fontWeight:600,marginBottom:16}}>Oportunidades</h3>
                 <div className="issues-grid">{campaigns.flatMap(c => (c.analysis?.opportunities || []).map((opp,i) => <div key={`${c.id}-o-${i}`} className="issue-card opportunity"><div className="issue-icon"><Icon name={opp.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{opp.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {opp.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.opportunities?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="lightbulb" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Melhore as campanhas para desbloquear oportunidades.</div></div>}</div>
+              </>
+            ) : page === 'creatives' ? (
+              <>
+                {/* Stats dos Criativos */}
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon blue"><Icon name="image" size={18} /></div></div>
+                    <div className="stat-value">{ads.length}</div>
+                    <div className="stat-label">Total de Anúncios</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon green"><Icon name="trendingUp" size={18} /></div></div>
+                    <div className="stat-value">{ads.filter(a => a.score?.total >= 70).length}</div>
+                    <div className="stat-label">Performando Bem</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon yellow"><Icon name="alertTriangle" size={18} /></div></div>
+                    <div className="stat-value">{ads.filter(a => a.fatigueLevel === 'warning').length}</div>
+                    <div className="stat-label">Em Fadiga</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon red"><Icon name="flame" size={18} /></div></div>
+                    <div className="stat-value">{ads.filter(a => a.fatigueLevel === 'critical').length}</div>
+                    <div className="stat-label">Fadiga Crítica</div>
+                  </div>
+                </div>
+
+                {/* Alerta de Criativos com Fadiga */}
+                {ads.filter(a => a.fatigueLevel === 'critical').length > 0 && (
+                  <div className="ai-summary" style={{ background: 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(245,158,11,0.08) 100%)', borderColor: 'rgba(239,68,68,0.2)' }}>
+                    <div className="ai-icon" style={{ background: 'linear-gradient(135deg, var(--accent-danger) 0%, var(--accent-warning) 100%)' }}>
+                      <Icon name="alertTriangle" size={22} />
+                    </div>
+                    <div className="ai-content">
+                      <div className="ai-header"><span className="ai-title">Alerta de Fadiga de Criativo</span><span className="ai-badge" style={{ background: 'var(--accent-danger)' }}>Urgente</span></div>
+                      <p className="ai-text">
+                        <strong className="danger">{ads.filter(a => a.fatigueLevel === 'critical').length} criativo{ads.filter(a => a.fatigueLevel === 'critical').length > 1 ? 's' : ''}</strong> com frequência muito alta (acima de 4x). 
+                        Isso significa que o público já viu o anúncio muitas vezes e pode estar ignorando. <strong>Recomendamos trocar esses criativos urgentemente.</strong>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading */}
+                {loadingAds ? (
+                  <div className="empty-state">
+                    <Icon name="refreshCw" size={48} className="empty-icon animate-spin" />
+                    <h3 className="empty-title">Carregando criativos...</h3>
+                  </div>
+                ) : ads.length === 0 ? (
+                  <div className="empty-state">
+                    <Icon name="image" size={48} className="empty-icon" />
+                    <h3 className="empty-title">Nenhum criativo encontrado</h3>
+                    <p className="empty-text">Seus anúncios aparecerão aqui quando disponíveis.</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Top Performers */}
+                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Icon name="trophy" size={18} style={{ color: 'var(--accent-warning)' }} />
+                      Top Performers
+                    </h3>
+                    <div className="issues-grid" style={{ marginBottom: 28 }}>
+                      {ads.filter(a => a.score?.total >= 60).slice(0, 6).map((ad, i) => {
+                        const ins = ad.insights || {};
+                        const status = AIEngine.getStatus(ad.score?.total || 0);
+                        return (
+                          <div key={ad.id} className="issue-card opportunity">
+                            <div className="issue-icon" style={{ background: status.bg, color: status.color, fontWeight: 700, fontSize: 14 }}>
+                              {ad.score?.total}
+                            </div>
+                            <div className="issue-content">
+                              <div className="issue-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {ad.name || `Anúncio ${i + 1}`}
+                                {ad.fatigueLevel === 'healthy' && <span style={{ fontSize: 9, background: 'var(--accent-primary-muted)', color: 'var(--accent-primary)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>SAUDÁVEL</span>}
+                              </div>
+                              <div className="issue-desc">
+                                CTR: {fmt.pct(ins.ctr || 0)} • CPA: {ins.cpa ? fmt.money(ins.cpa) : '-'} • {ins.conversions || 0} conv.
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {ads.filter(a => a.score?.total >= 60).length === 0 && (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}>
+                          <Icon name="target" size={40} style={{ marginBottom: 12, opacity: 0.5 }} />
+                          <div>Nenhum criativo com score acima de 60 ainda.</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Criativos com Fadiga */}
+                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Icon name="eye" size={18} style={{ color: 'var(--accent-warning)' }} />
+                      Criativos com Fadiga (Trocar em breve)
+                    </h3>
+                    <div className="issues-grid" style={{ marginBottom: 28 }}>
+                      {ads.filter(a => a.fatigueLevel !== 'healthy').map((ad, i) => {
+                        const ins = ad.insights || {};
+                        return (
+                          <div key={ad.id} className={`issue-card ${ad.fatigueLevel === 'critical' ? 'critical' : 'warning'}`}>
+                            <div className="issue-icon">
+                              <Icon name={ad.fatigueLevel === 'critical' ? 'flame' : 'alertTriangle'} size={20} />
+                            </div>
+                            <div className="issue-content">
+                              <div className="issue-title">{ad.name || `Anúncio ${i + 1}`}</div>
+                              <div className="issue-desc">
+                                Frequência: <strong>{(ins.frequency || 0).toFixed(1)}x</strong> • 
+                                {ad.fatigueLevel === 'critical' ? ' Público saturado - trocar urgente!' : ' Monitore nos próximos dias'}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {ads.filter(a => a.fatigueLevel !== 'healthy').length === 0 && (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}>
+                          <Icon name="checkCircle" size={40} style={{ marginBottom: 12, opacity: 0.5, color: 'var(--accent-primary)' }} />
+                          <div>Nenhum criativo com fadiga. Tudo saudável!</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Todos os Criativos */}
+                    <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Todos os Criativos ({ads.length})</h3>
+                    <div className="table-wrap">
+                      <table className="table">
+                        <thead>
+                          <tr>
+                            <th>Score</th>
+                            <th>Nome</th>
+                            <th>Gasto</th>
+                            <th>CPA</th>
+                            <th>CTR</th>
+                            <th>Conv.</th>
+                            <th>Freq.</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ads.map((ad, i) => {
+                            const ins = ad.insights || {};
+                            const status = AIEngine.getStatus(ad.score?.total || 0);
+                            return (
+                              <tr key={ad.id}>
+                                <td>
+                                  <span style={{ 
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                    width: 36, height: 36, borderRadius: '50%', 
+                                    background: status.bg, color: status.color, 
+                                    fontWeight: 700, fontSize: 12, fontFamily: 'var(--font-mono)' 
+                                  }}>
+                                    {ad.score?.total || 0}
+                                  </span>
+                                </td>
+                                <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {ad.name || `Anúncio ${i + 1}`}
+                                </td>
+                                <td style={{ fontFamily: 'var(--font-mono)' }}>{fmt.money(ins.spend || 0)}</td>
+                                <td style={{ fontFamily: 'var(--font-mono)', color: ins.cpa && ins.cpa <= AIEngine.config.metaCPA ? 'var(--accent-primary)' : ins.cpa > AIEngine.config.metaCPA * 1.5 ? 'var(--accent-danger)' : 'inherit' }}>
+                                  {ins.cpa ? fmt.money(ins.cpa) : '-'}
+                                </td>
+                                <td style={{ fontFamily: 'var(--font-mono)' }}>{fmt.pct(ins.ctr || 0)}</td>
+                                <td style={{ fontFamily: 'var(--font-mono)', color: ins.conversions > 0 ? 'var(--accent-primary)' : 'inherit' }}>{ins.conversions || 0}</td>
+                                <td style={{ fontFamily: 'var(--font-mono)', color: ad.fatigueLevel === 'critical' ? 'var(--accent-danger)' : ad.fatigueLevel === 'warning' ? 'var(--accent-warning)' : 'inherit' }}>
+                                  {(ins.frequency || 0).toFixed(1)}x
+                                </td>
+                                <td>
+                                  <span style={{ 
+                                    fontSize: 10, fontWeight: 600, padding: '4px 8px', borderRadius: 4,
+                                    background: ad.fatigueLevel === 'critical' ? 'var(--accent-danger-muted)' : ad.fatigueLevel === 'warning' ? 'var(--accent-warning-muted)' : 'var(--accent-primary-muted)',
+                                    color: ad.fatigueLevel === 'critical' ? 'var(--accent-danger)' : ad.fatigueLevel === 'warning' ? 'var(--accent-warning)' : 'var(--accent-primary)'
+                                  }}>
+                                    {ad.fatigueLevel === 'critical' ? 'TROCAR' : ad.fatigueLevel === 'warning' ? 'ATENÇÃO' : 'OK'}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Em breve</h3><p className="empty-text">Seção em desenvolvimento.</p></div>
