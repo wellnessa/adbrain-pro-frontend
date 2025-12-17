@@ -527,9 +527,14 @@ export default function App() {
             }
           } else if (res.error) {
             console.error('Erro ao carregar contas:', res.error);
+            setError('Erro ao carregar contas: ' + res.error);
+          } else if (!res.accounts || res.accounts.length === 0) {
+            console.warn('Nenhuma conta encontrada:', res);
+            setError('Nenhuma conta de anúncios encontrada. Verifique as permissões do token.');
           }
         }).catch(err => {
           console.error('Erro na requisição de contas:', err);
+          setError('Erro de conexão ao carregar contas');
         });
       }
     }
