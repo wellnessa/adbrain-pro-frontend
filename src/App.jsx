@@ -823,8 +823,8 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
 }
 
 function CreativeCard({ ad, rank }) {
-  const ins = ad.insights || {};
-  const score = ad.score?.total || 0;
+  const ins = ad.metrics || ad.insights || {};
+  const score = ad.score?.total ?? ad.score ?? 0;
   const status = AIEngine.getStatus(score);
   const fatigueLevel = ins.frequency > 4 ? 'critical' : ins.frequency > 2.5 ? 'warning' : 'healthy';
   
@@ -1028,14 +1028,18 @@ export default function App() {
     setLoadingAds(true);
     try {
       const res = await api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`);
-      if (res.success) {
-        const adsWithScore = (res.ads || []).map(ad => ({
-          ...ad,
-          score: AIEngine.calcScore({ insights: ad.insights })
-        })).sort((a, b) => (b.score?.total || 0) - (a.score?.total || 0));
-        setAds(adsWithScore);
+      console.log('Ads response:', res);
+      if (res.success && res.ads) {
+        // Backend já retorna score calculado, só ordenar
+        const sortedAds = res.ads.sort((a, b) => (b.score || 0) - (a.score || 0));
+        setAds(sortedAds);
+      } else {
+        setAds([]);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error('Erro ao carregar ads:', e); 
+      setAds([]);
+    }
     setLoadingAds(false);
   };
 
@@ -1249,9 +1253,9 @@ export default function App() {
               <>
                 <div className="stats-grid">
                   <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="image" size={18} /></div></div><div className="stat-value">{ads.length}</div><div className="stat-label">Total de Anúncios</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="trophy" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.score?.total >= 70).length}</div><div className="stat-label">Top Performers</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="alertTriangle" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.insights?.frequency > 2.5 && a.insights?.frequency <= 4).length}</div><div className="stat-label">Em Fadiga</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="flame" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.insights?.frequency > 4).length}</div><div className="stat-label">Fadiga Crítica</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="trophy" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.score ?? 0) >= 70).length}</div><div className="stat-label">Top Performers</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="alertTriangle" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 2.5 && (a.metrics?.frequency || 0) <= 4).length}</div><div className="stat-label">Em Fadiga</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="flame" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 4).length}</div><div className="stat-label">Fadiga Crítica</div></div>
                 </div>
                 
                 {loadingAds ? (
@@ -1261,12 +1265,12 @@ export default function App() {
                 ) : (
                   <>
                     <div className="section-header"><div className="section-title"><Icon name="trophy" size={18} style={{ color: 'var(--accent-warning)' }} />Top Performers</div></div>
-                    <div className="cards-grid">{ads.filter(a => a.score?.total >= 60).slice(0, 6).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={i + 1} />)}</div>
+                    <div className="cards-grid">{ads.filter(a => (a.score ?? 0) >= 60).slice(0, 6).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={i + 1} />)}</div>
                     
-                    {ads.filter(a => a.insights?.frequency > 2.5).length > 0 && (
+                    {ads.filter(a => (a.metrics?.frequency || 0) > 2.5).length > 0 && (
                       <>
                         <div className="section-header" style={{ marginTop: 24 }}><div className="section-title"><Icon name="alertTriangle" size={18} style={{ color: 'var(--accent-warning)' }} />Criativos com Fadiga</div></div>
-                        <div className="cards-grid">{ads.filter(a => a.insights?.frequency > 2.5).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={999} />)}</div>
+                        <div className="cards-grid">{ads.filter(a => (a.metrics?.frequency || 0) > 2.5).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={999} />)}</div>
                       </>
                     )}
                   </>
