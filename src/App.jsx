@@ -515,15 +515,21 @@ export default function App() {
         setConnected(true); 
         // Carregar contas quando já está logado
         api.get('/api/meta/ad-accounts').then(res => {
+          console.log('Ad accounts response:', res);
           if (res.success && res.accounts?.length > 0) {
             setAccounts(res.accounts);
-            if (savedAccount) {
+            if (savedAccount && res.accounts.some(a => a.id === savedAccount)) {
               setSelectedAccount(savedAccount);
             } else {
-              setSelectedAccount(res.accounts[0].id);
-              localStorage.setItem('adbrain_account', res.accounts[0].id);
+              const firstAccount = res.accounts[0].id;
+              setSelectedAccount(firstAccount);
+              localStorage.setItem('adbrain_account', firstAccount);
             }
+          } else if (res.error) {
+            console.error('Erro ao carregar contas:', res.error);
           }
+        }).catch(err => {
+          console.error('Erro na requisição de contas:', err);
         });
       }
     }
@@ -653,7 +659,18 @@ export default function App() {
           <header className="header">
             <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : page === 'creatives' ? 'Criativos' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Análise de performance dos anúncios' : 'Visão geral'}</p></div></div>
             <div className="header-right">
-              {connected && accounts.length > 0 && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
+              {connected && (
+                <div className="select-wrap">
+                  <select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>
+                    {accounts.length === 0 ? (
+                      <option value="">Carregando contas...</option>
+                    ) : (
+                      accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)
+                    )}
+                  </select>
+                  <Icon name="chevronDown" size={14} className="select-icon" />
+                </div>
+              )}
               <div className="select-wrap"><select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>{dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>
               <button className="btn btn-secondary" onClick={loadData} disabled={loading}><Icon name="refreshCw" size={15} className={loading ? 'animate-spin' : ''} />Atualizar</button>
             </div>
@@ -715,14 +732,97 @@ export default function App() {
               </>
             ) : page === 'settings' ? (
               <div className="settings-grid">
-                <div className="settings-card"><h3 className="settings-card-title"><Icon name="link" size={18} />Conexão Meta</h3><div className="settings-row"><span className="settings-label">Status</span><span className={`connection-badge ${connected ? 'connected' : 'disconnected'}`}><span className="connection-dot"></span>{connected ? 'Conectado' : 'Desconectado'}</span></div>{connected && <div style={{marginTop:16}}><button className="btn btn-danger" onClick={handleDisconnect}><Icon name="x" size={16} />Desconectar</button></div>}</div>
-                <div className="settings-card"><h3 className="settings-card-title"><Icon name="sliders" size={18} />Metas</h3><div className="settings-row"><span className="settings-label">Meta CPA</span><span className="settings-value">{fmt.money(AIEngine.config.metaCPA)}</span></div><div className="settings-row"><span className="settings-label">Meta ROAS</span><span className="settings-value">{AIEngine.config.metaROAS}x</span></div><div className="settings-row"><span className="settings-label">CTR Mínimo</span><span className="settings-value">{AIEngine.config.ctrMinimo}%</span></div></div>
+                <div className="settings-card">
+                  <h3 className="settings-card-title"><Icon name="link" size={18} />Conexão Meta</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">Status</span>
+                    <span className={`connection-badge ${connected ? 'connected' : 'disconnected'}`}>
+                      <span className="connection-dot"></span>
+                      {connected ? 'Conectado' : 'Desconectado'}
+                    </span>
+                  </div>
+                  {connected && accounts.length > 0 && (
+                    <div className="settings-row">
+                      <span className="settings-label">Conta Selecionada</span>
+                      <span className="settings-value">{accounts.find(a => a.id === selectedAccount)?.name || selectedAccount}</span>
+                    </div>
+                  )}
+                  {connected && (
+                    <div style={{marginTop:16}}>
+                      <button className="btn btn-danger" onClick={handleDisconnect}>
+                        <Icon name="x" size={16} />Desconectar
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div className="settings-card">
+                  <h3 className="settings-card-title"><Icon name="users" size={18} />Conta</h3>
+                  <div className="settings-row">
+                    <span className="settings-label">Usuário</span>
+                    <span className="settings-value">{user?.name || user?.email || '-'}</span>
+                  </div>
+                  <div className="settings-row">
+                    <span className="settings-label">Email</span>
+                    <span className="settings-value">{user?.email || '-'}</span>
+                  </div>
+                  <div style={{marginTop:16}}>
+                    <button className="btn btn-secondary" onClick={handleLogout}>
+                      <Icon name="logOut" size={16} />Sair da Conta
+                    </button>
+                  </div>
+                </div>
               </div>
-            ) : page === 'audience' && breakdown ? (
-              <div className="settings-grid">
-                <div className="settings-card"><h3 className="settings-card-title"><Icon name="users" size={18} />Por Gênero</h3>{breakdown.gender?.map((g,i) => <div className="settings-row" key={i}><span className="settings-label">{g.gender === 'male' ? 'Masculino' : 'Feminino'}</span><span className="settings-value">{g.conversions || 0} conv.</span></div>) || <p style={{color:'var(--text-muted)'}}>Sem dados</p>}</div>
-                <div className="settings-card"><h3 className="settings-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>{breakdown.age?.map((a,i) => <div className="settings-row" key={i}><span className="settings-label">{a.age}</span><span className="settings-value">{a.conversions || 0} conv.</span></div>) || <p style={{color:'var(--text-muted)'}}>Sem dados</p>}</div>
-              </div>
+            ) : page === 'audience' ? (
+              <>
+                {!breakdown ? (
+                  <div className="empty-state">
+                    <Icon name="users" size={48} className="empty-icon" />
+                    <h3 className="empty-title">Carregando dados de público...</h3>
+                    <p className="empty-text">Os dados de segmentação aparecerão aqui quando disponíveis.</p>
+                    <button className="btn btn-primary" style={{marginTop: 16}} onClick={loadData}>
+                      <Icon name="refreshCw" size={16} />Carregar Dados
+                    </button>
+                  </div>
+                ) : (
+                  <div className="settings-grid">
+                    <div className="settings-card">
+                      <h3 className="settings-card-title"><Icon name="users" size={18} />Por Gênero</h3>
+                      {breakdown.gender?.length > 0 ? breakdown.gender.map((g,i) => (
+                        <div className="settings-row" key={i}>
+                          <span className="settings-label">{g.gender === 'male' ? 'Masculino' : g.gender === 'female' ? 'Feminino' : g.gender}</span>
+                          <span className="settings-value">
+                            {g.conversions || 0} conv. • {fmt.money(g.spend || 0)}
+                          </span>
+                        </div>
+                      )) : <p style={{color:'var(--text-muted)', padding: '10px 0'}}>Sem dados de gênero</p>}
+                    </div>
+                    <div className="settings-card">
+                      <h3 className="settings-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>
+                      {breakdown.age?.length > 0 ? breakdown.age.map((a,i) => (
+                        <div className="settings-row" key={i}>
+                          <span className="settings-label">{a.age}</span>
+                          <span className="settings-value">
+                            {a.conversions || 0} conv. • {fmt.money(a.spend || 0)}
+                          </span>
+                        </div>
+                      )) : <p style={{color:'var(--text-muted)', padding: '10px 0'}}>Sem dados de idade</p>}
+                    </div>
+                    {breakdown.placement?.length > 0 && (
+                      <div className="settings-card">
+                        <h3 className="settings-card-title"><Icon name="target" size={18} />Por Posicionamento</h3>
+                        {breakdown.placement.map((p,i) => (
+                          <div className="settings-row" key={i}>
+                            <span className="settings-label">{p.publisher_platform} - {p.platform_position}</span>
+                            <span className="settings-value">
+                              {p.conversions || 0} conv. • {fmt.money(p.spend || 0)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             ) : page === 'insights' ? (
               <>
                 <div className="ai-summary"><div className="ai-icon"><Icon name="sparkles" size={22} /></div><div className="ai-content"><div className="ai-header"><span className="ai-title">Análise da Conta</span><span className="ai-badge">IA</span></div><p className="ai-text">Você tem <strong>{campaigns.length} campanhas</strong>. {summary.critical > 0 && <><strong className="danger">{summary.critical}</strong> precisam de atenção.</>} {summary.scalable > 0 && <><strong className="success">{summary.scalable}</strong> podem ser escaladas.</>}</p></div></div>
