@@ -25,7 +25,7 @@ const api = {
 };
 
 // =============================================================================
-// ICONS (Expandido com mais ícones profissionais)
+// ICONS
 // =============================================================================
 const Icon = ({ name, size = 20, className = '', style = {} }) => {
   const icons = {
@@ -51,7 +51,6 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     trendingUp: <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
     trendingDown: <><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></>,
     barChart3: <><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></>,
-    barChart2: <><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></>,
     pieChart: <><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></>,
     activity: <><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>,
     zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
@@ -61,7 +60,6 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     checkCircle: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></>,
     xCircle: <><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></>,
     eye: <><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>,
-    eyeOff: <><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></>,
     externalLink: <><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></>,
     moreVertical: <><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></>,
     arrowUp: <><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></>,
@@ -91,52 +89,31 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     filter: <><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>,
     layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
     grid: <><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></>,
-    list: <><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></>,
     copy: <><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></>,
+    edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
+    trash: <><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></>,
     download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>,
     upload: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>,
     video: <><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></>,
-    volumeX: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></>,
     mousePointer: <><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="m13 13 6 6"/></>,
-    cursor: <><path d="m4 4 7.07 17 2.51-7.39L21 11.07z"/></>,
-    crosshair: <><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></>,
     maximize2: <><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></>,
-    minimize2: <><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></>,
-    move: <><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></>,
-    scale: <><circle cx="12" cy="12" r="10"/><path d="m16 12-4 4-4-4"/><path d="m16 8-4 4-4-4"/></>,
     crown: <><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></>,
     gem: <><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></>,
     wallet: <><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></>,
-    creditCard: <><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></>,
     shoppingBag: <><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></>,
     package: <><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></>,
-    box: <><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></>,
     tag: <><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></>,
-    flag: <><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></>,
-    bookmark: <><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></>,
     bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></>,
     info: <><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></>,
     helpCircle: <><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></>,
     lock: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>,
-    unlock: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></>,
     shield: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>,
     shieldCheck: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></>,
-    bolt: <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></>,
     gauge: <><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></>,
-    compass: <><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></>,
-    navigation: <><polygon points="3 11 22 2 13 21 11 13 3 11"/></>,
     send: <><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
     share2: <><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></>,
     repeat: <><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></>,
-    shuffle: <><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></>,
-    skip: <><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></>,
     power: <><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" x2="12" y1="2" y2="12"/></>,
-    terminal: <><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></>,
-    code: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
-    database: <><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></>,
-    server: <><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></>,
-    wifi: <><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 8.82a15 15 0 0 1 20 0"/><line x1="12" x2="12.01" y1="20" y2="20"/></>,
-    wifiOff: <><line x1="1" x2="23" y1="1" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" x2="12.01" y1="20" y2="20"/></>,
     plusCircle: <><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></>,
     minusCircle: <><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></>,
     plus: <><path d="M5 12h14"/><path d="M12 5v14"/></>,
@@ -153,24 +130,26 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
 const fmt = {
   money: (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0),
   moneyCompact: (v) => {
+    if (!v) return 'R$ 0';
     if (v >= 1000000) return `R$ ${(v/1000000).toFixed(1)}M`;
     if (v >= 1000) return `R$ ${(v/1000).toFixed(1)}K`;
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
   },
   num: (v) => new Intl.NumberFormat('pt-BR').format(Math.round(v || 0)),
   numCompact: (v) => {
+    if (!v) return '0';
     if (v >= 1000000) return `${(v/1000000).toFixed(1)}M`;
     if (v >= 1000) return `${(v/1000).toFixed(1)}K`;
-    return new Intl.NumberFormat('pt-BR').format(Math.round(v || 0));
+    return new Intl.NumberFormat('pt-BR').format(Math.round(v));
   },
   pct: (v) => `${(v || 0).toFixed(2)}%`,
 };
 
 // =============================================================================
-// AI ENGINE (AVANÇADO)
+// AI ENGINE
 // =============================================================================
 const AIEngine = {
-  config: { metaCPA: 400, metaROAS: 3, ctrMinimo: 1, frequenciaMaxima: 3 },
+  config: { metaCPA: 150, metaROAS: 3, ctrMinimo: 1, frequenciaMaxima: 3 },
 
   calcScore: (campaign) => {
     const ins = campaign.insights || {};
@@ -193,19 +172,17 @@ const AIEngine = {
     if (ins.roas > 0) {
       const r = ins.roas / cfg.metaROAS;
       scores.roas = r >= 1.5 ? 100 : r >= 1.0 ? 80 : r >= 0.5 ? 50 : 20;
-    } else if (ins.spend > 50) {
-      scores.roas = 10;
     }
     const total = Math.round(scores.cpa * 0.40 + scores.ctr * 0.25 + scores.freq * 0.15 + scores.roas * 0.20);
     return { total: Math.max(0, Math.min(100, total)), breakdown: scores };
   },
 
   getStatus: (score) => {
-    if (score >= 80) return { label: 'Excelente', color: '#10b981', bg: 'rgba(16,185,129,0.15)' };
-    if (score >= 65) return { label: 'Bom', color: '#22c55e', bg: 'rgba(34,197,94,0.15)' };
-    if (score >= 45) return { label: 'Atenção', color: '#eab308', bg: 'rgba(234,179,8,0.15)' };
-    if (score >= 25) return { label: 'Alerta', color: '#f97316', bg: 'rgba(249,115,22,0.15)' };
-    return { label: 'Crítico', color: '#ef4444', bg: 'rgba(239,68,68,0.15)' };
+    if (score >= 80) return { label: 'Excelente', color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: 'trophy' };
+    if (score >= 65) return { label: 'Bom', color: '#22c55e', bg: 'rgba(34,197,94,0.15)', icon: 'thumbsUp' };
+    if (score >= 45) return { label: 'Atenção', color: '#eab308', bg: 'rgba(234,179,8,0.15)', icon: 'alertTriangle' };
+    if (score >= 25) return { label: 'Alerta', color: '#f97316', bg: 'rgba(249,115,22,0.15)', icon: 'alertCircle' };
+    return { label: 'Crítico', color: '#ef4444', bg: 'rgba(239,68,68,0.15)', icon: 'flame' };
   },
 
   analyze: (campaign) => {
@@ -213,178 +190,35 @@ const AIEngine = {
     const cfg = AIEngine.config;
     const issues = [], opportunities = [];
     
-    if (ins.spend > 150 && ins.conversions === 0) {
-      issues.push({ severity: 'critical', icon: 'flame', title: 'Gasto sem conversões', desc: `${fmt.money(ins.spend)} investidos sem resultado.` });
+    if (ins.spend > 100 && ins.conversions === 0) {
+      issues.push({ severity: 'critical', icon: 'flame', title: 'Sem conversões', desc: `${fmt.money(ins.spend)} gastos sem resultado` });
     }
-    if (ins.cpa > cfg.metaCPA * 2) {
-      issues.push({ severity: 'critical', icon: 'alertTriangle', title: 'CPA muito alto', desc: `CPA de ${fmt.money(ins.cpa)} está ${Math.round((ins.cpa / cfg.metaCPA - 1) * 100)}% acima da meta.` });
+    if (ins.cpa > cfg.metaCPA * 1.5) {
+      issues.push({ severity: 'critical', icon: 'alertTriangle', title: 'CPA alto', desc: `CPA ${Math.round((ins.cpa / cfg.metaCPA - 1) * 100)}% acima da meta` });
     }
-    if (ins.frequency > cfg.frequenciaMaxima * 1.5) {
-      issues.push({ severity: 'warning', icon: 'eye', title: 'Público saturado', desc: `Frequência de ${ins.frequency?.toFixed(1)}x indica saturação.` });
+    if (ins.frequency > cfg.frequenciaMaxima * 1.3) {
+      issues.push({ severity: 'warning', icon: 'eye', title: 'Frequência alta', desc: `${ins.frequency?.toFixed(1)}x - público saturado` });
     }
     if (ins.ctr < cfg.ctrMinimo * 0.5 && ins.impressions > 1000) {
-      issues.push({ severity: 'warning', icon: 'image', title: 'CTR baixo', desc: `CTR de ${ins.ctr?.toFixed(2)}% - criativos precisam melhorar.` });
+      issues.push({ severity: 'warning', icon: 'image', title: 'CTR baixo', desc: `${ins.ctr?.toFixed(2)}% - melhore os criativos` });
     }
-    if (ins.cpa > 0 && ins.cpa < cfg.metaCPA * 0.6 && ins.conversions >= 2) {
-      opportunities.push({ icon: 'rocket', title: 'Pronta para escalar', desc: `CPA ${Math.round((1 - ins.cpa / cfg.metaCPA) * 100)}% abaixo da meta.` });
+    if (ins.cpa > 0 && ins.cpa < cfg.metaCPA * 0.7 && ins.conversions >= 2) {
+      opportunities.push({ icon: 'rocket', title: 'Escalar', desc: `CPA ${Math.round((1 - ins.cpa / cfg.metaCPA) * 100)}% abaixo da meta` });
     }
-    if (ins.roas >= cfg.metaROAS * 1.5 && ins.spend > 50) {
-      opportunities.push({ icon: 'trendingUp', title: 'ROAS excelente', desc: `ROAS de ${ins.roas?.toFixed(2)}x merece mais investimento.` });
+    if (ins.roas >= cfg.metaROAS * 1.3) {
+      opportunities.push({ icon: 'trendingUp', title: 'ROAS alto', desc: `${ins.roas?.toFixed(2)}x - aumente investimento` });
     }
     return { issues, opportunities };
   },
 
   getSummary: (campaigns) => {
-    const critical = campaigns.filter(c => c.score?.total < 30);
-    const scalable = campaigns.filter(c => c.score?.total >= 75 && c.insights?.conversions > 0);
-    const wastedSpend = critical.reduce((s, c) => s + (c.insights?.spend || 0), 0);
-    return { critical: critical.length, scalable: scalable.length, wastedSpend };
+    const critical = campaigns.filter(c => (c.score?.total || c.healthScore || 0) < 30);
+    const scalable = campaigns.filter(c => (c.score?.total || c.healthScore || 0) >= 70 && (c.insights?.conversions || 0) > 0);
+    return { critical: critical.length, scalable: scalable.length };
   },
-
-  // Análise avançada de público
-  analyzeAudience: (breakdown) => {
-    if (!breakdown) return { gender: [], age: [], insights: [] };
-    
-    const insights = [];
-    
-    // Análise de gênero
-    const genderData = (breakdown.gender || []).map(g => ({
-      ...g,
-      cpa: g.spend && g.conversions ? g.spend / g.conversions : null,
-      ctr: g.impressions && g.clicks ? (g.clicks / g.impressions) * 100 : 0,
-    })).sort((a, b) => (a.cpa || Infinity) - (b.cpa || Infinity));
-    
-    if (genderData.length >= 2 && genderData[0].cpa && genderData[1].cpa) {
-      const diff = ((genderData[1].cpa - genderData[0].cpa) / genderData[1].cpa * 100).toFixed(0);
-      if (diff > 20) {
-        insights.push({
-          type: 'opportunity',
-          icon: 'users',
-          title: `${genderData[0].gender === 'male' ? 'Homens' : 'Mulheres'} convertem ${diff}% mais barato`,
-          desc: `Considere aumentar orçamento para esse gênero.`,
-          impact: 'high'
-        });
-      }
-    }
-    
-    // Análise de idade
-    const ageData = (breakdown.age || []).map(a => ({
-      ...a,
-      cpa: a.spend && a.conversions ? a.spend / a.conversions : null,
-      ctr: a.impressions && a.clicks ? (a.clicks / a.impressions) * 100 : 0,
-    })).sort((a, b) => (a.cpa || Infinity) - (b.cpa || Infinity));
-    
-    if (ageData.length > 0 && ageData[0].cpa) {
-      insights.push({
-        type: 'info',
-        icon: 'calendar',
-        title: `Melhor faixa etária: ${ageData[0].age}`,
-        desc: `CPA de ${fmt.money(ageData[0].cpa)} com ${ageData[0].conversions} conversões.`,
-        impact: 'medium'
-      });
-    }
-    
-    // Encontrar idades com desperdício
-    const wastedAges = ageData.filter(a => a.spend > 50 && (!a.conversions || a.conversions === 0));
-    if (wastedAges.length > 0) {
-      const totalWasted = wastedAges.reduce((s, a) => s + a.spend, 0);
-      insights.push({
-        type: 'warning',
-        icon: 'alertTriangle',
-        title: `${wastedAges.length} faixa(s) etária(s) sem conversão`,
-        desc: `${fmt.money(totalWasted)} gastos sem resultado. Considere excluir.`,
-        impact: 'high'
-      });
-    }
-    
-    return { gender: genderData, age: ageData, insights };
-  },
-
-  // Gerar recomendações de IA
-  generateRecommendations: (campaigns, breakdown) => {
-    const recommendations = [];
-    const summary = AIEngine.getSummary(campaigns);
-    
-    // Recomendação 1: Campanhas críticas
-    if (summary.critical > 0) {
-      recommendations.push({
-        priority: 1,
-        type: 'urgent',
-        icon: 'alertTriangle',
-        title: 'Pausar campanhas sem resultado',
-        desc: `${summary.critical} campanha(s) gastando ${fmt.money(summary.wastedSpend)} sem conversões. Pause imediatamente.`,
-        action: 'Pausar Todas',
-        actionType: 'danger'
-      });
-    }
-    
-    // Recomendação 2: Campanhas para escalar
-    if (summary.scalable > 0) {
-      recommendations.push({
-        priority: 2,
-        type: 'opportunity',
-        icon: 'rocket',
-        title: 'Escalar campanhas vencedoras',
-        desc: `${summary.scalable} campanha(s) com CPA abaixo da meta. Aumente o orçamento em 20-30%.`,
-        action: 'Ver Campanhas',
-        actionType: 'primary'
-      });
-    }
-    
-    // Recomendação 3: Baseada em público
-    if (breakdown?.gender?.length > 0) {
-      const bestGender = breakdown.gender.reduce((best, g) => {
-        const cpa = g.spend && g.conversions ? g.spend / g.conversions : Infinity;
-        const bestCpa = best.spend && best.conversions ? best.spend / best.conversions : Infinity;
-        return cpa < bestCpa ? g : best;
-      }, breakdown.gender[0]);
-      
-      if (bestGender.conversions > 0) {
-        recommendations.push({
-          priority: 3,
-          type: 'insight',
-          icon: 'users',
-          title: `Foque em ${bestGender.gender === 'male' ? 'homens' : 'mulheres'}`,
-          desc: `Esse público tem o melhor CPA (${fmt.money(bestGender.spend / bestGender.conversions)}). Crie conjuntos específicos.`,
-          action: 'Criar Conjunto',
-          actionType: 'secondary'
-        });
-      }
-    }
-    
-    // Recomendação 4: CTR baixo
-    const lowCtrCampaigns = campaigns.filter(c => c.insights?.ctr < 0.5 && c.insights?.impressions > 1000);
-    if (lowCtrCampaigns.length > 0) {
-      recommendations.push({
-        priority: 4,
-        type: 'warning',
-        icon: 'image',
-        title: 'Renove seus criativos',
-        desc: `${lowCtrCampaigns.length} campanha(s) com CTR muito baixo. Teste novos anúncios.`,
-        action: 'Ver Criativos',
-        actionType: 'secondary'
-      });
-    }
-    
-    // Recomendação 5: Frequência alta
-    const highFreqCampaigns = campaigns.filter(c => c.insights?.frequency > 4);
-    if (highFreqCampaigns.length > 0) {
-      recommendations.push({
-        priority: 5,
-        type: 'warning',
-        icon: 'repeat',
-        title: 'Expanda seu público',
-        desc: `${highFreqCampaigns.length} campanha(s) com frequência acima de 4x. O público está saturado.`,
-        action: 'Expandir Público',
-        actionType: 'secondary'
-      });
-    }
-    
-    return recommendations.sort((a, b) => a.priority - b.priority);
-  }
 };
 // =============================================================================
-// STYLES (PROFISSIONAL)
+// STYLES
 // =============================================================================
 const styles = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -404,25 +238,16 @@ const styles = `
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font-sans); background: var(--bg-base); color: var(--text-primary); line-height: 1.5; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-muted); border-radius: 3px; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-
-.animate-fade { animation: fadeIn 0.3s ease forwards; }
-.animate-slide { animation: slideIn 0.3s ease forwards; }
 .animate-spin { animation: spin 1s linear infinite; }
-.animate-pulse { animation: pulse 2s ease-in-out infinite; }
 
-/* Layout */
 .app-layout { display: flex; min-height: 100vh; }
 
 /* Sidebar */
@@ -431,61 +256,56 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .sidebar-logo { display: flex; align-items: center; gap: 12px; }
 .logo-mark { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent-primary) 0%, #059669 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(16,185,129,0.3); }
 .logo-mark svg { stroke: white; }
-.logo-title { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
-.logo-subtitle { font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-primary); margin-top: 1px; }
+.logo-title { font-size: 18px; font-weight: 700; }
+.logo-subtitle { font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-primary); }
 .sidebar-nav { flex: 1; padding: 16px 10px; overflow-y: auto; }
 .nav-group { margin-bottom: 20px; }
 .nav-group-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-faint); padding: 0 12px; margin-bottom: 8px; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; margin-bottom: 2px; position: relative; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; margin-bottom: 2px; position: relative; }
 .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
 .nav-item.active { background: var(--accent-primary-muted); color: var(--accent-primary); }
 .nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--accent-primary); border-radius: 0 2px 2px 0; }
 .nav-badge { margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; background: var(--accent-danger); color: white; font-size: 9px; font-weight: 700; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
 .nav-badge.success { background: var(--accent-primary); }
 
-/* Main Content */
+/* Main */
 .main-content { flex: 1; margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
 
 /* Header */
-.header { height: 64px; background: var(--bg-subtle); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
+.header { height: 64px; background: var(--bg-subtle); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
 .header-left { display: flex; align-items: center; gap: 16px; }
-.header-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-.header-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.header-title { font-size: 18px; font-weight: 700; }
+.header-subtitle { font-size: 12px; color: var(--text-muted); }
 .header-right { display: flex; align-items: center; gap: 10px; }
 
 /* Select */
 .select-wrap { position: relative; }
-.select { appearance: none; background: var(--bg-muted); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 8px 32px 8px 12px; border-radius: var(--radius-md); font-size: 12px; font-weight: 500; font-family: var(--font-sans); cursor: pointer; min-width: 140px; transition: all 0.15s ease; }
-.select:hover { border-color: var(--border-muted); }
+.select { appearance: none; background: var(--bg-muted); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 8px 32px 8px 12px; border-radius: var(--radius-md); font-size: 12px; font-weight: 500; font-family: var(--font-sans); cursor: pointer; min-width: 140px; }
 .select:focus { outline: none; border-color: var(--accent-primary); }
 .select-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); }
 
 /* Buttons */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; font-family: var(--font-sans); cursor: pointer; transition: all 0.15s ease; border: none; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; font-family: var(--font-sans); cursor: pointer; transition: all 0.15s; border: none; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-primary { background: var(--accent-primary); color: white; }
 .btn-primary:hover:not(:disabled) { background: var(--accent-primary-hover); }
 .btn-secondary { background: var(--bg-muted); color: var(--text-primary); border: 1px solid var(--border-subtle); }
-.btn-secondary:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--border-muted); }
+.btn-secondary:hover:not(:disabled) { background: var(--bg-hover); }
 .btn-danger { background: var(--accent-danger); color: white; }
 .btn-danger:hover:not(:disabled) { background: var(--accent-danger-hover); }
 .btn-ghost { background: transparent; color: var(--text-secondary); }
 .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
 .btn-sm { padding: 6px 10px; font-size: 11px; }
-.btn-icon { width: 32px; height: 32px; padding: 0; border-radius: var(--radius-md); background: var(--bg-muted); border: 1px solid var(--border-subtle); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; }
+.btn-icon { width: 32px; height: 32px; padding: 0; border-radius: var(--radius-md); background: var(--bg-muted); border: 1px solid var(--border-subtle); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
 .btn-icon:hover { background: var(--bg-hover); color: var(--text-primary); }
-.btn-icon.scale { color: var(--accent-primary); border-color: rgba(16,185,129,0.3); }
-.btn-icon.scale:hover { background: var(--accent-primary-muted); }
-.btn-icon.warning { color: var(--accent-warning); border-color: rgba(245,158,11,0.3); }
-.btn-icon.warning:hover { background: var(--accent-warning-muted); }
+.btn-icon.active { background: var(--accent-primary-muted); color: var(--accent-primary); border-color: var(--accent-primary); }
 
-/* Page Content */
+/* Page */
 .page-content { flex: 1; padding: 20px 24px; }
 
-/* Stats Grid */
+/* Stats */
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.stat-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; transition: all 0.2s ease; position: relative; overflow: hidden; }
-.stat-card:hover { border-color: var(--border-muted); transform: translateY(-1px); }
+.stat-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; position: relative; overflow: hidden; }
 .stat-card::before { content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px; background: radial-gradient(circle, var(--accent-primary-muted) 0%, transparent 70%); opacity: 0.5; }
 .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .stat-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
@@ -494,32 +314,29 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .stat-icon.yellow { background: var(--accent-warning-muted); color: var(--accent-warning); }
 .stat-icon.blue { background: var(--accent-info-muted); color: var(--accent-info); }
 .stat-icon.purple { background: var(--accent-purple-muted); color: var(--accent-purple); }
-.stat-trend { display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
-.stat-trend.up { background: var(--accent-primary-muted); color: var(--accent-primary); }
-.stat-trend.down { background: var(--accent-danger-muted); color: var(--accent-danger); }
 .stat-value { font-size: 24px; font-weight: 700; letter-spacing: -1px; margin-bottom: 2px; }
 .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.stat-change { display: inline-flex; align-items: center; gap: 2px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-top: 6px; }
+.stat-change.up { background: var(--accent-primary-muted); color: var(--accent-primary); }
+.stat-change.down { background: var(--accent-danger-muted); color: var(--accent-danger); }
 
-/* Cards Grid */
-.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 20px; }
-.creative-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; transition: all 0.2s ease; cursor: pointer; }
+/* Cards */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.creative-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; transition: all 0.2s; cursor: pointer; }
 .creative-card:hover { border-color: var(--border-muted); transform: translateY(-2px); }
-.creative-card.top-performer { border-color: rgba(16,185,129,0.3); background: linear-gradient(135deg, var(--bg-subtle) 0%, rgba(16,185,129,0.05) 100%); }
-.creative-card.warning { border-color: rgba(245,158,11,0.3); }
-.creative-card.critical { border-color: rgba(239,68,68,0.3); }
+.creative-card.top-performer { border-color: rgba(16,185,129,0.3); }
 .card-thumbnail { width: 100%; height: 140px; background: var(--bg-muted); overflow: hidden; }
-.card-thumbnail img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
-.creative-card:hover .card-thumbnail img { transform: scale(1.05); }
-.card-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 16px 0; }
-.creative-card:not(:has(.card-thumbnail)) .card-header { padding-top: 16px; }
-.card-score { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
-.card-badge { padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.card-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+.card-body { padding: 14px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.card-score { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.card-badge { padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
 .card-badge.success { background: var(--accent-primary-muted); color: var(--accent-primary); }
 .card-badge.warning { background: var(--accent-warning-muted); color: var(--accent-warning); }
 .card-badge.danger { background: var(--accent-danger-muted); color: var(--accent-danger); }
-.card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 16px; }
-.card-subtitle { font-size: 11px; color: var(--text-muted); padding: 0 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 16px 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+.card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-subtitle { font-size: 11px; color: var(--text-muted); }
+.card-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
 .card-metric { text-align: center; }
 .card-metric-value { font-size: 13px; font-weight: 600; }
 .card-metric-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
@@ -531,77 +348,77 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .ai-content { flex: 1; }
 .ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .ai-title { font-size: 14px; font-weight: 600; }
-.ai-badge { background: var(--accent-primary); color: white; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.5px; }
+.ai-badge { background: var(--accent-primary); color: white; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
 .ai-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
-.ai-text strong { color: var(--text-primary); font-weight: 600; }
+.ai-text strong { color: var(--text-primary); }
 .ai-text .danger { color: var(--accent-danger); }
 .ai-text .success { color: var(--accent-primary); }
 .ai-actions { display: flex; gap: 8px; margin-top: 12px; }
 
-/* Recommendation Cards */
-.recommendations-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-.recommendation-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; display: flex; align-items: center; gap: 14px; transition: all 0.15s ease; }
-.recommendation-card:hover { border-color: var(--border-muted); }
-.recommendation-card.urgent { border-left: 3px solid var(--accent-danger); background: linear-gradient(90deg, rgba(239,68,68,0.05) 0%, transparent 50%); }
-.recommendation-card.opportunity { border-left: 3px solid var(--accent-primary); background: linear-gradient(90deg, rgba(16,185,129,0.05) 0%, transparent 50%); }
-.recommendation-card.warning { border-left: 3px solid var(--accent-warning); }
-.recommendation-card.insight { border-left: 3px solid var(--accent-info); }
-.rec-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.recommendation-card.urgent .rec-icon { background: var(--accent-danger-muted); color: var(--accent-danger); }
-.recommendation-card.opportunity .rec-icon { background: var(--accent-primary-muted); color: var(--accent-primary); }
-.recommendation-card.warning .rec-icon { background: var(--accent-warning-muted); color: var(--accent-warning); }
-.recommendation-card.insight .rec-icon { background: var(--accent-info-muted); color: var(--accent-info); }
-.rec-content { flex: 1; min-width: 0; }
-.rec-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-.rec-desc { font-size: 12px; color: var(--text-secondary); }
-.rec-action { flex-shrink: 0; }
-
-/* Audience Cards */
+/* Audience */
 .audience-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
 .audience-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; }
-.audience-card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-.audience-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.audience-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.audience-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
 .audience-item:last-child { border-bottom: none; padding-bottom: 0; }
 .audience-item:first-of-type { padding-top: 0; }
-.audience-icon { width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.audience-rank { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.audience-rank.gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; }
+.audience-rank.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #fff; }
+.audience-rank.bronze { background: linear-gradient(135deg, #d97706, #b45309); color: #fff; }
+.audience-rank.normal { background: var(--bg-elevated); color: var(--text-muted); }
 .audience-info { flex: 1; min-width: 0; }
-.audience-name { font-size: 13px; font-weight: 500; }
+.audience-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
 .audience-stats { font-size: 11px; color: var(--text-muted); }
-.audience-bar { flex: 1; max-width: 100px; }
-.progress-bar { height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
-.progress-fill.green { background: var(--accent-primary); }
-.progress-fill.yellow { background: var(--accent-warning); }
-.progress-fill.red { background: var(--accent-danger); }
-.progress-fill.blue { background: var(--accent-info); }
-.audience-value { font-size: 12px; font-weight: 600; text-align: right; min-width: 60px; }
+.audience-bar { width: 80px; height: 6px; background: var(--bg-elevated); border-radius: 3px; overflow: hidden; }
+.audience-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.audience-bar-fill.green { background: var(--accent-primary); }
+.audience-bar-fill.yellow { background: var(--accent-warning); }
+.audience-bar-fill.red { background: var(--accent-danger); }
+.audience-value { font-size: 12px; font-weight: 600; text-align: right; min-width: 70px; }
+.audience-cpa { font-size: 10px; color: var(--text-muted); text-align: right; }
 
-/* Filter Bar */
+/* Insight Cards */
+.insights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.insight-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; display: flex; gap: 14px; }
+.insight-card.success { border-left: 3px solid var(--accent-primary); }
+.insight-card.warning { border-left: 3px solid var(--accent-warning); }
+.insight-card.danger { border-left: 3px solid var(--accent-danger); }
+.insight-card.info { border-left: 3px solid var(--accent-info); }
+.insight-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.insight-card.success .insight-icon { background: var(--accent-primary-muted); color: var(--accent-primary); }
+.insight-card.warning .insight-icon { background: var(--accent-warning-muted); color: var(--accent-warning); }
+.insight-card.danger .insight-icon { background: var(--accent-danger-muted); color: var(--accent-danger); }
+.insight-card.info .insight-icon { background: var(--accent-info-muted); color: var(--accent-info); }
+.insight-content { flex: 1; }
+.insight-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.insight-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.insight-action { margin-top: 10px; }
+
+/* Filter */
 .filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.filter-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: var(--bg-muted); border: 1px solid var(--border-subtle); border-radius: 20px; font-size: 11px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; }
+.filter-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: var(--bg-muted); border: 1px solid var(--border-subtle); border-radius: 20px; font-size: 11px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
 .filter-chip:hover { border-color: var(--border-muted); color: var(--text-primary); }
 .filter-chip.active { background: var(--accent-primary-muted); border-color: var(--accent-primary); color: var(--accent-primary); }
-.filter-chip .count { background: var(--bg-elevated); padding: 1px 5px; border-radius: 8px; font-size: 9px; font-weight: 600; }
-.filter-chip.active .count { background: rgba(16,185,129,0.2); }
+.filter-chip .count { background: var(--bg-elevated); padding: 1px 5px; border-radius: 8px; font-size: 9px; }
 .search-box { position: relative; margin-left: auto; }
-.search-input { background: var(--bg-muted); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 7px 12px 7px 32px; font-size: 12px; font-family: var(--font-sans); color: var(--text-primary); width: 200px; transition: all 0.2s ease; }
-.search-input::placeholder { color: var(--text-muted); }
+.search-input { background: var(--bg-muted); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 7px 12px 7px 32px; font-size: 12px; color: var(--text-primary); width: 200px; }
 .search-input:focus { outline: none; border-color: var(--accent-primary); width: 260px; }
 .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-/* Campaign List */
+/* Campaigns */
 .campaigns-list { display: flex; flex-direction: column; gap: 8px; }
-.campaign-row { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); transition: all 0.2s ease; overflow: hidden; }
+.campaign-row { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; }
 .campaign-row:hover { border-color: var(--border-muted); }
 .campaign-row.expanded { border-color: var(--accent-primary); }
-.campaign-main { display: grid; grid-template-columns: 48px 1fr 90px 90px 90px 100px; align-items: center; gap: 14px; padding: 14px 16px; cursor: pointer; }
+.campaign-main { display: grid; grid-template-columns: 48px 1fr 100px 100px 80px 120px; align-items: center; gap: 14px; padding: 14px 16px; cursor: pointer; }
 
 /* Score Ring */
-.score-ring { width: 42px; height: 42px; position: relative; flex-shrink: 0; }
+.score-ring { width: 42px; height: 42px; position: relative; }
 .score-ring svg { width: 42px; height: 42px; transform: rotate(-90deg); }
 .score-ring-bg { fill: none; stroke: var(--bg-elevated); stroke-width: 4; }
-.score-ring-progress { fill: none; stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
-.score-ring-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; font-weight: 700; }
+.score-ring-progress { fill: none; stroke-width: 4; stroke-linecap: round; }
+.score-ring-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: 700; }
 
 /* Campaign Info */
 .campaign-info { min-width: 0; }
@@ -620,9 +437,9 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .campaign-actions { display: flex; gap: 4px; justify-content: flex-end; }
 
 /* Expanded */
-.campaign-expanded { border-top: 1px solid var(--border-subtle); background: var(--bg-muted); animation: fadeIn 0.2s ease; }
+.campaign-expanded { border-top: 1px solid var(--border-subtle); background: var(--bg-muted); }
 .expanded-tabs { display: flex; gap: 2px; padding: 10px 16px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-subtle); }
-.expanded-tab { padding: 6px 12px; border-radius: var(--radius-md); font-size: 11px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; font-family: var(--font-sans); transition: all 0.15s ease; }
+.expanded-tab { padding: 6px 12px; border-radius: var(--radius-md); font-size: 11px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; font-family: var(--font-sans); }
 .expanded-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
 .expanded-tab.active { background: var(--accent-primary-muted); color: var(--accent-primary); }
 .expanded-content { padding: 16px; }
@@ -633,10 +450,9 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .breakdown-value { font-size: 22px; font-weight: 700; margin-bottom: 2px; }
 .breakdown-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
 
-/* Issues Grid */
+/* Issues */
 .issues-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
-.issue-card { display: flex; gap: 12px; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); transition: all 0.15s ease; }
-.issue-card:hover { transform: translateY(-1px); }
+.issue-card { display: flex; gap: 12px; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); }
 .issue-card.critical { background: var(--accent-danger-muted); border-color: rgba(239,68,68,0.2); }
 .issue-card.warning { background: var(--accent-warning-muted); border-color: rgba(245,158,11,0.2); }
 .issue-card.opportunity { background: var(--accent-primary-muted); border-color: rgba(16,185,129,0.2); }
@@ -644,73 +460,78 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .issue-card.critical .issue-icon { background: rgba(239,68,68,0.2); color: var(--accent-danger); }
 .issue-card.warning .issue-icon { background: rgba(245,158,11,0.2); color: var(--accent-warning); }
 .issue-card.opportunity .issue-icon { background: rgba(16,185,129,0.2); color: var(--accent-primary); }
-.issue-content { flex: 1; min-width: 0; }
+.issue-content { flex: 1; }
 .issue-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
 .issue-desc { font-size: 11px; color: var(--text-secondary); }
 
 /* Settings */
 .settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .settings-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; }
-.settings-card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.settings-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
 .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
-.settings-row:last-child { border-bottom: none; padding-bottom: 0; }
-.settings-row:first-of-type { padding-top: 0; }
+.settings-row:last-child { border-bottom: none; }
 .settings-label { font-size: 12px; color: var(--text-secondary); }
 .settings-value { font-size: 12px; font-weight: 600; }
 
 /* Input */
-.input { width: 100%; padding: 10px 12px; background: var(--bg-muted); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 13px; font-family: var(--font-sans); color: var(--text-primary); transition: all 0.15s ease; }
-.input:hover { border-color: var(--border-muted); }
+.input { width: 100%; padding: 10px 12px; background: var(--bg-muted); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 13px; color: var(--text-primary); }
 .input:focus { outline: none; border-color: var(--accent-primary); }
-.input::placeholder { color: var(--text-muted); }
 
-/* Connection Badge */
+/* Connection */
 .connection-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-md); font-size: 11px; font-weight: 600; }
 .connection-badge.connected { background: var(--accent-primary-muted); color: var(--accent-primary); }
 .connection-badge.disconnected { background: var(--accent-danger-muted); color: var(--accent-danger); }
 .connection-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 /* Toast */
-.toast { position: fixed; top: 16px; right: 16px; z-index: 1000; animation: slideIn 0.3s ease; }
+.toast { position: fixed; top: 16px; right: 16px; z-index: 1000; animation: fadeIn 0.3s; }
 .toast-content { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 12px; font-weight: 500; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
 .toast-content.success { background: var(--accent-primary); color: white; }
 .toast-content.error { background: var(--accent-danger); color: white; }
 
-/* Empty State */
+/* Empty */
 .empty-state { text-align: center; padding: 40px 20px; }
 .empty-icon { width: 48px; height: 48px; margin: 0 auto 14px; color: var(--text-faint); opacity: 0.5; }
 .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
 .empty-text { font-size: 12px; color: var(--text-muted); }
 
-/* Section Header */
+/* Section */
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .section-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.section-subtitle { font-size: 11px; color: var(--text-muted); }
 
-/* Table */
-.table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); }
-.table { width: 100%; border-collapse: collapse; background: var(--bg-subtle); }
-.table th { text-align: left; padding: 10px 14px; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-subtle); background: var(--bg-muted); }
-.table td { padding: 10px 14px; font-size: 12px; border-bottom: 1px solid var(--border-subtle); }
-.table tr:last-child td { border-bottom: none; }
-.table tr:hover td { background: var(--bg-hover); }
+/* Dropdown Menu */
+.dropdown { position: relative; }
+.dropdown-menu { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 4px; min-width: 160px; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+.dropdown-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px; color: var(--text-secondary); cursor: pointer; }
+.dropdown-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.dropdown-item.danger { color: var(--accent-danger); }
+.dropdown-item.danger:hover { background: var(--accent-danger-muted); }
+
+/* Quick Actions */
+.quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.quick-action { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.quick-action:hover { border-color: var(--accent-primary); transform: translateY(-2px); }
+.quick-action-icon { width: 44px; height: 44px; margin: 0 auto 10px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+.quick-action-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.quick-action-desc { font-size: 10px; color: var(--text-muted); }
 
 /* Responsive */
-@media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 44px 1fr 80px 80px 90px; } .metric-cell:nth-child(4) { display: none; } }
-@media (max-width: 1200px) { .settings-grid, .audience-grid { grid-template-columns: 1fr; } .score-breakdown { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } .stats-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 44px 1fr 90px 90px 100px; } }
+@media (max-width: 1200px) { .settings-grid, .audience-grid { grid-template-columns: 1fr; } .quick-actions { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
 `;
 
 // =============================================================================
 // COMPONENTS
 // =============================================================================
+
 function ScoreRing({ score, size = 42 }) {
   const status = AIEngine.getStatus(score);
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (score / 100) * circumference;
   return (
     <div className="score-ring" style={{ width: size, height: size }}>
-      <svg viewBox="0 0 42 42" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 42 42">
         <circle cx="21" cy="21" r="18" className="score-ring-bg" />
         <circle cx="21" cy="21" r="18" className="score-ring-progress" style={{ stroke: status.color, strokeDasharray: circumference, strokeDashoffset: offset }} />
       </svg>
@@ -719,12 +540,18 @@ function ScoreRing({ score, size = 42 }) {
   );
 }
 
-function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setActiveTab }) {
+function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setActiveTab, loading }) {
   const ins = campaign.insights || {};
-  const score = campaign.score?.total || 0;
+  const score = campaign.score?.total ?? campaign.healthScore ?? 50;
   const status = AIEngine.getStatus(score);
   const isActive = campaign.status === 'ACTIVE';
   const cfg = AIEngine.config;
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleAction = (action) => {
+    setShowMenu(false);
+    onAction(action, campaign.id);
+  };
 
   return (
     <div className={`campaign-row ${expanded ? 'expanded' : ''}`}>
@@ -737,7 +564,7 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
               <Icon name={isActive ? 'play' : 'pause'} size={8} />
               {isActive ? 'Ativo' : 'Pausado'}
             </span>
-            <span className="campaign-objective">{campaign.objective || 'Conversões'}</span>
+            <span className="campaign-objective">{campaign.objective?.replace('OUTCOME_', '') || 'Conversões'}</span>
           </div>
         </div>
         <div className="metric-cell">
@@ -755,13 +582,37 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
           <div className="metric-label">Conv.</div>
         </div>
         <div className="campaign-actions" onClick={e => e.stopPropagation()}>
-          {score >= 70 && ins.conversions > 0 && (
-            <button className="btn-icon scale" title="Escalar"><Icon name="trendingUp" size={14} /></button>
-          )}
-          <button className="btn-icon" onClick={() => onAction(isActive ? 'pause' : 'resume', campaign.id)} title={isActive ? 'Pausar' : 'Ativar'}>
+          <button 
+            className={`btn-icon ${isActive ? '' : 'active'}`} 
+            onClick={() => handleAction(isActive ? 'pause' : 'resume')}
+            disabled={loading}
+            title={isActive ? 'Pausar' : 'Ativar'}
+          >
             <Icon name={isActive ? 'pause' : 'play'} size={14} />
           </button>
-          <button className="btn-icon" title="Mais"><Icon name="moreVertical" size={14} /></button>
+          <div className="dropdown">
+            <button className="btn-icon" onClick={() => setShowMenu(!showMenu)}>
+              <Icon name="moreVertical" size={14} />
+            </button>
+            {showMenu && (
+              <div className="dropdown-menu">
+                <div className="dropdown-item" onClick={() => handleAction('duplicate')}>
+                  <Icon name="copy" size={14} />Duplicar
+                </div>
+                <div className="dropdown-item" onClick={() => handleAction('edit')}>
+                  <Icon name="edit" size={14} />Editar
+                </div>
+                {score >= 70 && (
+                  <div className="dropdown-item" onClick={() => handleAction('scale')}>
+                    <Icon name="trendingUp" size={14} />Escalar 20%
+                  </div>
+                )}
+                <div className="dropdown-item danger" onClick={() => handleAction('delete')}>
+                  <Icon name="trash" size={14} />Arquivar
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {expanded && (
@@ -775,28 +626,39 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
             {activeTab === 'insights' && (
               <>
                 <div className="score-breakdown">
-                  <div className="breakdown-item"><div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.cpa || 50).color }}>{campaign.score?.breakdown?.cpa || 0}</div><div className="breakdown-label">CPA Score</div></div>
-                  <div className="breakdown-item"><div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.ctr || 50).color }}>{campaign.score?.breakdown?.ctr || 0}</div><div className="breakdown-label">CTR Score</div></div>
-                  <div className="breakdown-item"><div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.freq || 50).color }}>{campaign.score?.breakdown?.freq || 0}</div><div className="breakdown-label">Frequência</div></div>
-                  <div className="breakdown-item"><div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.roas || 50).color }}>{campaign.score?.breakdown?.roas || 0}</div><div className="breakdown-label">ROAS Score</div></div>
+                  <div className="breakdown-item">
+                    <div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.cpa || 50).color }}>{campaign.score?.breakdown?.cpa || 50}</div>
+                    <div className="breakdown-label">CPA Score</div>
+                  </div>
+                  <div className="breakdown-item">
+                    <div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.ctr || 50).color }}>{campaign.score?.breakdown?.ctr || 50}</div>
+                    <div className="breakdown-label">CTR Score</div>
+                  </div>
+                  <div className="breakdown-item">
+                    <div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.freq || 100).color }}>{campaign.score?.breakdown?.freq || 100}</div>
+                    <div className="breakdown-label">Frequência</div>
+                  </div>
+                  <div className="breakdown-item">
+                    <div className="breakdown-value" style={{ color: AIEngine.getStatus(campaign.score?.breakdown?.roas || 50).color }}>{campaign.score?.breakdown?.roas || 50}</div>
+                    <div className="breakdown-label">ROAS Score</div>
+                  </div>
                 </div>
                 <div className="issues-grid">
                   {(campaign.analysis?.issues || []).map((issue, i) => (
-                    <div key={i} className={`issue-card ${issue.severity}`}>
-                      <div className="issue-icon"><Icon name={issue.icon} size={16} /></div>
+                    <div key={i} className={`issue-card ${issue.severity || 'warning'}`}>
+                      <div className="issue-icon"><Icon name={issue.icon || 'alertTriangle'} size={16} /></div>
                       <div className="issue-content"><div className="issue-title">{issue.title}</div><div className="issue-desc">{issue.desc}</div></div>
                     </div>
                   ))}
                   {(campaign.analysis?.opportunities || []).map((opp, i) => (
                     <div key={`o-${i}`} className="issue-card opportunity">
-                      <div className="issue-icon"><Icon name={opp.icon} size={16} /></div>
+                      <div className="issue-icon"><Icon name={opp.icon || 'rocket'} size={16} /></div>
                       <div className="issue-content"><div className="issue-title">{opp.title}</div><div className="issue-desc">{opp.desc}</div></div>
                     </div>
                   ))}
                   {!campaign.analysis?.issues?.length && !campaign.analysis?.opportunities?.length && (
                     <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 20, color: 'var(--text-muted)' }}>
-                      <Icon name="checkCircle" size={32} style={{ marginBottom: 8, opacity: 0.5 }} />
-                      <div>Nenhum insight disponível</div>
+                      <Icon name="checkCircle" size={32} style={{ marginBottom: 8, opacity: 0.5 }} /><div>Campanha saudável</div>
                     </div>
                   )}
                 </div>
@@ -804,8 +666,8 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
             )}
             {activeTab === 'metrics' && (
               <div className="score-breakdown" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
-                <div className="breakdown-item"><div className="breakdown-value">{fmt.num(ins.impressions || 0)}</div><div className="breakdown-label">Impressões</div></div>
-                <div className="breakdown-item"><div className="breakdown-value">{fmt.num(ins.clicks || 0)}</div><div className="breakdown-label">Cliques</div></div>
+                <div className="breakdown-item"><div className="breakdown-value">{fmt.numCompact(ins.impressions || 0)}</div><div className="breakdown-label">Impressões</div></div>
+                <div className="breakdown-item"><div className="breakdown-value">{fmt.numCompact(ins.clicks || 0)}</div><div className="breakdown-label">Cliques</div></div>
                 <div className="breakdown-item"><div className="breakdown-value">{fmt.pct(ins.ctr || 0)}</div><div className="breakdown-label">CTR</div></div>
                 <div className="breakdown-item"><div className="breakdown-value">{(ins.frequency || 0).toFixed(1)}x</div><div className="breakdown-label">Frequência</div></div>
                 <div className="breakdown-item"><div className="breakdown-value">{ins.roas ? `${ins.roas.toFixed(2)}x` : '-'}</div><div className="breakdown-label">ROAS</div></div>
@@ -813,10 +675,11 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
             )}
             {activeTab === 'actions' && (
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button className="btn btn-secondary"><Icon name="copy" size={14} />Duplicar</button>
-                <button className="btn btn-secondary"><Icon name="sliders" size={14} />Editar Público</button>
-                {score >= 70 && <button className="btn btn-primary"><Icon name="trendingUp" size={14} />Aumentar Orçamento 20%</button>}
-                {score < 30 && <button className="btn btn-danger"><Icon name="pause" size={14} />Pausar Campanha</button>}
+                <button className="btn btn-secondary" onClick={() => handleAction('duplicate')}><Icon name="copy" size={14} />Duplicar</button>
+                <button className="btn btn-secondary" onClick={() => handleAction('edit')}><Icon name="sliders" size={14} />Editar</button>
+                {score >= 70 && ins.conversions > 0 && <button className="btn btn-primary" onClick={() => handleAction('scale')}><Icon name="trendingUp" size={14} />Escalar 20%</button>}
+                {isActive && score < 30 && <button className="btn btn-danger" onClick={() => handleAction('pause')}><Icon name="pause" size={14} />Pausar</button>}
+                {!isActive && <button className="btn btn-primary" onClick={() => handleAction('resume')}><Icon name="play" size={14} />Ativar</button>}
               </div>
             )}
           </div>
@@ -828,90 +691,60 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
 
 function CreativeCard({ ad, rank }) {
   const ins = ad.metrics || ad.insights || {};
-  const score = ad.score?.total ?? ad.score ?? 0;
+  const score = ad.score?.total ?? ad.score ?? 50;
   const status = AIEngine.getStatus(score);
-  const fatigueLevel = ins.frequency > 4 ? 'critical' : ins.frequency > 2.5 ? 'warning' : 'healthy';
   const imageUrl = ad.creative?.imageUrl || ad.creative?.thumbnail_url || null;
   
   return (
-    <div className={`creative-card ${rank <= 3 ? 'top-performer' : fatigueLevel !== 'healthy' ? fatigueLevel : ''}`}>
-      {/* Thumbnail do Criativo */}
-      {imageUrl && (
-        <div className="card-thumbnail">
-          <img src={imageUrl} alt={ad.name} />
-        </div>
-      )}
-      <div className="card-header">
-        <div className="card-score" style={{ background: status.bg, color: status.color }}>{score}</div>
-        <div>
+    <div className={`creative-card ${rank <= 3 ? 'top-performer' : ''}`}>
+      {imageUrl && <div className="card-thumbnail"><img src={imageUrl} alt={ad.name} /></div>}
+      <div className="card-body">
+        <div className="card-header">
+          <div className="card-score" style={{ background: status.bg, color: status.color }}>{score}</div>
           {rank <= 3 && <span className="card-badge success"><Icon name="trophy" size={10} /> #{rank}</span>}
-          {fatigueLevel === 'critical' && <span className="card-badge danger">Fadiga Alta</span>}
-          {fatigueLevel === 'warning' && <span className="card-badge warning">Atenção</span>}
         </div>
-      </div>
-      <div className="card-title">{ad.name || 'Sem nome'}</div>
-      <div className="card-subtitle">{ad.creative?.title || ad.adset_name || 'Conjunto padrão'}</div>
-      <div className="card-metrics">
-        <div className="card-metric">
-          <div className="card-metric-value" style={{ color: ins.cpa && ins.cpa <= AIEngine.config.metaCPA ? 'var(--accent-primary)' : ins.cpa > AIEngine.config.metaCPA * 1.5 ? 'var(--accent-danger)' : 'inherit' }}>
-            {ins.cpa ? fmt.money(ins.cpa) : '-'}
-          </div>
-          <div className="card-metric-label">CPA</div>
-        </div>
-        <div className="card-metric">
-          <div className="card-metric-value">{fmt.pct(ins.ctr || 0)}</div>
-          <div className="card-metric-label">CTR</div>
-        </div>
-        <div className="card-metric">
-          <div className="card-metric-value" style={{ color: ins.conversions > 0 ? 'var(--accent-primary)' : 'inherit' }}>{ins.conversions || 0}</div>
-          <div className="card-metric-label">Conv</div>
+        <div className="card-title">{ad.name || 'Sem nome'}</div>
+        <div className="card-subtitle">{ad.creative?.title || 'Anúncio'}</div>
+        <div className="card-metrics">
+          <div className="card-metric"><div className="card-metric-value" style={{ color: ins.cpa && ins.cpa <= AIEngine.config.metaCPA ? 'var(--accent-primary)' : 'inherit' }}>{ins.cpa ? fmt.money(ins.cpa) : '-'}</div><div className="card-metric-label">CPA</div></div>
+          <div className="card-metric"><div className="card-metric-value">{fmt.pct(ins.ctr || 0)}</div><div className="card-metric-label">CTR</div></div>
+          <div className="card-metric"><div className="card-metric-value" style={{ color: ins.conversions > 0 ? 'var(--accent-primary)' : 'inherit' }}>{ins.conversions || 0}</div><div className="card-metric-label">Conv</div></div>
         </div>
       </div>
     </div>
   );
 }
 
-function AudienceBarChart({ data, label, valueKey, maxValue }) {
-  const max = maxValue || Math.max(...data.map(d => d[valueKey] || 0), 1);
+function AudienceSection({ data, title, icon, type }) {
+  if (!data || data.length === 0) return <div className="audience-card"><div className="audience-title"><Icon name={icon} size={18} />{title}</div><div style={{ textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}>Sem dados</div></div>;
+
+  const maxConv = Math.max(...data.map(d => d.conversions || 0), 1);
+  const sorted = [...data].sort((a, b) => {
+    const cpA = a.conversions > 0 ? (a.cpa || a.spend / a.conversions) : Infinity;
+    const cpB = b.conversions > 0 ? (b.cpa || b.spend / b.conversions) : Infinity;
+    return cpA - cpB;
+  });
+
   return (
     <div className="audience-card">
-      <div className="audience-card-title"><Icon name={label === 'Gênero' ? 'users' : label === 'Idade' ? 'calendar' : 'target'} size={18} />{label}</div>
-      {data.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted)' }}>Sem dados</div>
-      ) : (
-        data.map((item, i) => {
-          const value = item[valueKey] || 0;
-          const pct = (value / max) * 100;
-          const cpa = item.spend && item.conversions ? item.spend / item.conversions : null;
-          return (
-            <div className="audience-item" key={i}>
-              <div className="audience-icon" style={{ 
-                background: i === 0 ? 'var(--accent-primary-muted)' : 'var(--bg-elevated)',
-                color: i === 0 ? 'var(--accent-primary)' : 'var(--text-muted)'
-              }}>
-                <Icon name={label === 'Gênero' ? (item.gender === 'male' ? 'male' : 'female') : 'users'} size={14} />
-              </div>
-              <div className="audience-info">
-                <div className="audience-name">
-                  {label === 'Gênero' ? (item.gender === 'male' ? 'Masculino' : 'Feminino') : item.age || item.publisher_platform || '-'}
-                </div>
-                <div className="audience-stats">
-                  {item.conversions || 0} conv • {fmt.money(item.spend || 0)}
-                  {cpa && ` • CPA ${fmt.money(cpa)}`}
-                </div>
-              </div>
-              <div className="audience-bar">
-                <div className="progress-bar">
-                  <div className="progress-fill green" style={{ width: `${pct}%` }}></div>
-                </div>
-              </div>
-              <div className="audience-value" style={{ color: i === 0 ? 'var(--accent-primary)' : 'inherit' }}>
-                {item.conversions || 0}
-              </div>
-            </div>
-          );
-        })
-      )}
+      <div className="audience-title"><Icon name={icon} size={18} />{title}</div>
+      {sorted.slice(0, 6).map((item, i) => {
+        const name = type === 'gender' ? (item.gender === 'male' ? 'Masculino' : item.gender === 'female' ? 'Feminino' : item.label) : type === 'age' ? item.age : item.label || item.deviceLabel || item.platform || '-';
+        const conv = item.conversions || 0;
+        const spend = item.spend || 0;
+        const cpa = item.cpa || (conv > 0 ? spend / conv : 0);
+        const pct = (conv / maxConv) * 100;
+        const isGood = cpa > 0 && cpa <= AIEngine.config.metaCPA;
+        const isBad = cpa > AIEngine.config.metaCPA * 1.5;
+        return (
+          <div className="audience-item" key={i}>
+            <div className={`audience-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}`}>{i + 1}</div>
+            <div className="audience-info"><div className="audience-name">{name}</div><div className="audience-stats">{conv} conv • {fmt.money(spend)}</div></div>
+            <div className="audience-bar"><div className={`audience-bar-fill ${isGood ? 'green' : isBad ? 'red' : 'yellow'}`} style={{ width: `${pct}%` }} /></div>
+            <div><div className="audience-value" style={{ color: isGood ? 'var(--accent-primary)' : isBad ? 'var(--accent-danger)' : 'inherit' }}>{cpa > 0 ? fmt.money(cpa) : '-'}</div><div className="audience-cpa">CPA</div></div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -948,13 +781,13 @@ export default function App() {
     { value: 'this_month', label: 'Este mês' }, { value: 'last_month', label: 'Mês passado' },
   ];
 
-  // Filtered campaigns
+  // Computed values
   const filteredCampaigns = useMemo(() => {
     let result = campaigns;
     if (filter === 'active') result = result.filter(c => c.status === 'ACTIVE');
     if (filter === 'paused') result = result.filter(c => c.status === 'PAUSED');
-    if (filter === 'critical') result = result.filter(c => c.score?.total < 30);
-    if (filter === 'scale') result = result.filter(c => c.score?.total >= 70 && c.insights?.conversions > 0);
+    if (filter === 'critical') result = result.filter(c => (c.score?.total ?? c.healthScore ?? 50) < 30);
+    if (filter === 'scale') result = result.filter(c => (c.score?.total ?? c.healthScore ?? 50) >= 70 && (c.insights?.conversions || 0) > 0);
     if (search) result = result.filter(c => c.name?.toLowerCase().includes(search.toLowerCase()));
     return result;
   }, [campaigns, filter, search]);
@@ -963,23 +796,55 @@ export default function App() {
     all: campaigns.length,
     active: campaigns.filter(c => c.status === 'ACTIVE').length,
     paused: campaigns.filter(c => c.status === 'PAUSED').length,
-    critical: campaigns.filter(c => c.score?.total < 30).length,
-    scale: campaigns.filter(c => c.score?.total >= 70 && c.insights?.conversions > 0).length,
+    critical: campaigns.filter(c => (c.score?.total ?? c.healthScore ?? 50) < 30).length,
+    scale: campaigns.filter(c => (c.score?.total ?? c.healthScore ?? 50) >= 70 && (c.insights?.conversions || 0) > 0).length,
   }), [campaigns]);
 
-  const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
   const totals = useMemo(() => campaigns.reduce((t, c) => {
     const ins = c.insights || {};
-    return {
-      spend: t.spend + (ins.spend || 0),
-      conversions: t.conversions + (ins.conversions || 0),
-      clicks: t.clicks + (ins.clicks || 0),
-      impressions: t.impressions + (ins.impressions || 0),
-    };
+    return { spend: t.spend + (ins.spend || 0), conversions: t.conversions + (ins.conversions || 0), clicks: t.clicks + (ins.clicks || 0), impressions: t.impressions + (ins.impressions || 0) };
   }, { spend: 0, conversions: 0, clicks: 0, impressions: 0 }), [campaigns]);
 
-  const recommendations = useMemo(() => AIEngine.generateRecommendations(campaigns, breakdown), [campaigns, breakdown]);
-  const audienceAnalysis = useMemo(() => AIEngine.analyzeAudience(breakdown), [breakdown]);
+  const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
+
+  // Audience insights
+  const audienceInsights = useMemo(() => {
+    const insights = [];
+    const bd = breakdown?.ageGender || breakdown;
+    
+    if (bd?.byGender?.length >= 2) {
+      const sorted = [...bd.byGender].filter(g => g.conversions > 0).sort((a, b) => (a.cpa || Infinity) - (b.cpa || Infinity));
+      if (sorted.length >= 2 && sorted[0].cpa && sorted[1].cpa) {
+        const diff = Math.round(((sorted[1].cpa - sorted[0].cpa) / sorted[1].cpa) * 100);
+        if (diff > 15) {
+          insights.push({ type: 'success', icon: 'users', title: `${sorted[0].label || (sorted[0].gender === 'male' ? 'Homens' : 'Mulheres')} convertem ${diff}% mais barato`, desc: `CPA de ${fmt.money(sorted[0].cpa)} vs ${fmt.money(sorted[1].cpa)}. Considere focar nesse público.` });
+        }
+      }
+    }
+    
+    if (bd?.byAge?.length > 0) {
+      const withConv = bd.byAge.filter(a => a.conversions > 0);
+      if (withConv.length > 0) {
+        const best = withConv.reduce((b, a) => (a.cpa || Infinity) < (b.cpa || Infinity) ? a : b);
+        insights.push({ type: 'info', icon: 'calendar', title: `Melhor faixa etária: ${best.age}`, desc: `CPA de ${fmt.money(best.cpa)} com ${best.conversions} conversões.` });
+      }
+      const wasted = bd.byAge.filter(a => a.spend > 30 && (!a.conversions || a.conversions === 0));
+      if (wasted.length > 0) {
+        const total = wasted.reduce((s, a) => s + a.spend, 0);
+        insights.push({ type: 'warning', icon: 'alertTriangle', title: `${wasted.length} faixa(s) sem conversão`, desc: `${fmt.money(total)} gastos sem resultado. Considere excluir: ${wasted.map(w => w.age).join(', ')}` });
+      }
+    }
+
+    if (breakdown?.placements?.length > 0) {
+      const withConv = breakdown.placements.filter(p => p.conversions > 0);
+      if (withConv.length > 0) {
+        const best = withConv.reduce((b, p) => (p.cpa || Infinity) < (b.cpa || Infinity) ? p : b);
+        insights.push({ type: 'success', icon: 'smartphone', title: `Melhor posicionamento: ${best.label}`, desc: `CPA de ${fmt.money(best.cpa)} com ${best.conversions} conversões.` });
+      }
+    }
+
+    return insights;
+  }, [breakdown]);
 
   useEffect(() => { if (error || success) { const t = setTimeout(() => { setError(''); setSuccess(''); }, 4000); return () => clearTimeout(t); } }, [error, success]);
 
@@ -995,25 +860,20 @@ export default function App() {
         setToken(savedToken); 
         setConnected(true); 
         api.get('/api/meta/ad-accounts').then(res => {
-          const accountsList = res.adAccounts || res.accounts || [];
-          if (res.success && accountsList.length > 0) {
-            setAccounts(accountsList);
-            if (savedAccount && accountsList.some(a => a.id === savedAccount)) {
-              setSelectedAccount(savedAccount);
-            } else {
-              const firstAccount = accountsList[0].id;
-              setSelectedAccount(firstAccount);
-              localStorage.setItem('adbrain_account', firstAccount);
-            }
+          const list = res.adAccounts || res.accounts || [];
+          if (res.success && list.length > 0) {
+            setAccounts(list);
+            const acc = savedAccount && list.some(a => a.id === savedAccount) ? savedAccount : list[0].id;
+            setSelectedAccount(acc);
+            localStorage.setItem('adbrain_account', acc);
           }
         });
       }
     }
   }, []);
 
-  // Load data when account changes
   useEffect(() => { if (connected && selectedAccount) loadData(); }, [selectedAccount, dateRange]);
-  useEffect(() => { if (page === 'creatives' && connected && selectedAccount) loadAds(); }, [page, selectedAccount, dateRange]);
+  useEffect(() => { if (page === 'creatives' && connected && selectedAccount && ads.length === 0) loadAds(); }, [page, selectedAccount]);
 
   const loadData = async () => {
     setLoading(true);
@@ -1023,62 +883,46 @@ export default function App() {
         api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`)
       ]);
       if (campRes.success) {
-        setCampaigns((campRes.campaigns || []).map(c => ({
-          ...c,
-          score: AIEngine.calcScore(c),
-          analysis: AIEngine.analyze(c)
-        })));
+        const processed = (campRes.campaigns || []).map(c => ({ ...c, score: AIEngine.calcScore(c), analysis: AIEngine.analyze(c) }));
+        setCampaigns(processed);
       }
       if (breakRes.success) setBreakdown(breakRes.breakdown);
-    } catch (e) { setError('Erro ao carregar dados'); }
+    } catch (e) { setError('Erro ao carregar'); }
     setLoading(false);
   };
 
   const loadAds = async () => {
-    if (!selectedAccount) return;
     setLoadingAds(true);
     try {
       const res = await api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`);
-      console.log('Ads response:', res);
-      if (res.success && res.ads) {
-        // Backend já retorna score calculado, só ordenar
-        const sortedAds = res.ads.sort((a, b) => (b.score || 0) - (a.score || 0));
-        setAds(sortedAds);
-      } else {
-        setAds([]);
-      }
-    } catch (e) { 
-      console.error('Erro ao carregar ads:', e); 
-      setAds([]);
-    }
+      if (res.success) setAds((res.ads || []).sort((a, b) => (b.score || 0) - (a.score || 0)));
+    } catch (e) { console.error(e); }
     setLoadingAds(false);
   };
 
-  const loadAccounts = async () => { 
-    const res = await api.get('/api/meta/ad-accounts'); 
-    const accountsList = res.adAccounts || res.accounts || [];
-    if (res.success && accountsList.length > 0) { 
-      setAccounts(accountsList); 
-      const first = accountsList[0].id; 
-      setSelectedAccount(first); 
-      localStorage.setItem('adbrain_account', first); 
-    } 
-  };
-
-  const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('dashboard'); } else setError(res.error || 'Erro ao fazer login'); };
-  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('dashboard'); } else setError(res.error || 'Erro ao criar conta'); };
-  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setAds([]); setPage('login'); };
-  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
-  const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
+  const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('dashboard'); } else setError(res.error || 'Erro'); };
+  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('dashboard'); } else setError(res.error || 'Erro'); };
+  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setCampaigns([]); setAds([]); setPage('login'); };
+  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Conectado!'); const accRes = await api.get('/api/meta/ad-accounts'); const list = accRes.adAccounts || accRes.accounts || []; if (list.length > 0) { setAccounts(list); setSelectedAccount(list[0].id); localStorage.setItem('adbrain_account', list[0].id); } } else setError(res.error || 'Token inválido'); };
+  const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
+  
   const handleAction = async (action, campaignId) => {
-    setLoading(true);
-    const res = await api.post(`/api/meta/campaigns/${campaignId}/${action}`);
-    setLoading(false);
-    if (res.success) { setSuccess(`Campanha ${action === 'pause' ? 'pausada' : 'ativada'}!`); loadData(); }
-    else setError(res.error || 'Erro na ação');
+    if (action === 'pause' || action === 'resume') {
+      setLoading(true);
+      const res = await api.post(`/api/meta/campaigns/${campaignId}/${action}`);
+      setLoading(false);
+      if (res.success) { setSuccess(`Campanha ${action === 'pause' ? 'pausada' : 'ativada'}!`); loadData(); }
+      else setError(res.error || 'Erro');
+    } else if (action === 'scale') {
+      setSuccess('Função de escalar em desenvolvimento');
+    } else if (action === 'duplicate') {
+      setSuccess('Função de duplicar em desenvolvimento');
+    } else if (action === 'edit') {
+      setSuccess('Abrindo editor...');
+    }
   };
 
-  // AUTH PAGE
+  // AUTH
   if (!user) {
     return (
       <><style>{styles}</style>
@@ -1093,21 +937,19 @@ export default function App() {
             <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: 24 }}>
               {page === 'login' ? (
                 <form onSubmit={handleLogin}>
-                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="seu@email.com" required /></div>
-                  <div style={{ marginBottom: 20 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} placeholder="••••••••" required /></div>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required /></div>
+                  <div style={{ marginBottom: 20 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required /></div>
                   <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Entrando...</> : 'Entrar'}</button>
                 </form>
               ) : (
                 <form onSubmit={handleRegister}>
-                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome</label><input className="input" type="text" value={authName} onChange={e => setAuthName(e.target.value)} placeholder="Seu nome" required /></div>
-                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="seu@email.com" required /></div>
-                  <div style={{ marginBottom: 20 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} placeholder="••••••••" required /></div>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome</label><input className="input" type="text" value={authName} onChange={e => setAuthName(e.target.value)} required /></div>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required /></div>
+                  <div style={{ marginBottom: 20 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required /></div>
                   <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Criando...</> : 'Criar Conta'}</button>
                 </form>
               )}
-              <div style={{ textAlign: 'center', marginTop: 16 }}>
-                <button className="btn btn-ghost" onClick={() => setPage(page === 'login' ? 'register' : 'login')} style={{ fontSize: 12 }}>{page === 'login' ? 'Criar conta' : 'Já tenho conta'}</button>
-              </div>
+              <div style={{ textAlign: 'center', marginTop: 16 }}><button className="btn btn-ghost" onClick={() => setPage(page === 'login' ? 'register' : 'login')}>{page === 'login' ? 'Criar conta' : 'Já tenho conta'}</button></div>
             </div>
           </div>
         </div>
@@ -1128,7 +970,7 @@ export default function App() {
               <div className={`nav-item ${page === 'campaigns' ? 'active' : ''}`} onClick={() => setPage('campaigns')}><Icon name="target" size={18} />Campanhas{filterCounts.critical > 0 && <span className="nav-badge">{filterCounts.critical}</span>}</div>
               <div className={`nav-item ${page === 'creatives' ? 'active' : ''}`} onClick={() => setPage('creatives')}><Icon name="image" size={18} />Criativos</div>
               <div className={`nav-item ${page === 'audience' ? 'active' : ''}`} onClick={() => setPage('audience')}><Icon name="users" size={18} />Público</div>
-              <div className={`nav-item ${page === 'insights' ? 'active' : ''}`} onClick={() => setPage('insights')}><Icon name="sparkles" size={18} />Insights IA{recommendations.length > 0 && <span className="nav-badge success">{recommendations.length}</span>}</div>
+              <div className={`nav-item ${page === 'insights' ? 'active' : ''}`} onClick={() => setPage('insights')}><Icon name="sparkles" size={18} />Insights IA{summary.scalable > 0 && <span className="nav-badge success">{summary.scalable}</span>}</div>
             </div>
             <div className="nav-group">
               <div className="nav-group-label">Sistema</div>
@@ -1142,24 +984,25 @@ export default function App() {
           <header className="header">
             <div className="header-left">
               <div>
-                <h1 className="header-title">
-                  {page === 'dashboard' ? 'Dashboard' : page === 'campaigns' ? 'Campanhas' : page === 'creatives' ? 'Criativos' : page === 'audience' ? 'Análise de Público' : page === 'insights' ? 'Insights IA' : 'Configurações'}
-                </h1>
-                <p className="header-subtitle">
-                  {page === 'dashboard' ? 'Visão geral da sua conta' : page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Performance dos anúncios' : page === 'audience' ? 'Entenda seu público' : page === 'insights' ? 'Recomendações inteligentes' : 'Configurações da conta'}
-                </p>
+                <h1 className="header-title">{page === 'dashboard' ? 'Dashboard' : page === 'campaigns' ? 'Campanhas' : page === 'creatives' ? 'Criativos' : page === 'audience' ? 'Análise de Público' : page === 'insights' ? 'Insights IA' : 'Configurações'}</h1>
+                <p className="header-subtitle">{page === 'dashboard' ? 'Visão geral da sua conta' : page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Performance dos anúncios' : page === 'audience' ? 'Entenda seu público' : page === 'insights' ? 'Recomendações inteligentes' : 'Configurações da conta'}</p>
               </div>
             </div>
             <div className="header-right">
-              {connected && (
+              {connected && accounts.length > 0 && (
                 <div className="select-wrap">
                   <select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>
-                    {accounts.length === 0 ? <option value="">Carregando...</option> : accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}
+                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}
                   </select>
                   <Icon name="chevronDown" size={14} className="select-icon" />
                 </div>
               )}
-              <div className="select-wrap"><select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>{dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>
+              <div className="select-wrap">
+                <select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
+                  {dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+                <Icon name="chevronDown" size={14} className="select-icon" />
+              </div>
               <button className="btn btn-secondary" onClick={loadData} disabled={loading}><Icon name="refreshCw" size={15} className={loading ? 'animate-spin' : ''} />Atualizar</button>
             </div>
           </header>
@@ -1171,71 +1014,58 @@ export default function App() {
               <div style={{ maxWidth: 440, margin: '50px auto', textAlign: 'center' }}>
                 <div style={{ width: 70, height: 70, background: 'var(--accent-info-muted)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}><Icon name="zap" size={36} style={{ color: 'var(--accent-info)' }} /></div>
                 <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 10 }}>Conecte sua conta Meta</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 28, fontSize: 14 }}>Para começar, conecte sua conta do Facebook Ads</p>
+                <p style={{ color: 'var(--text-muted)', marginBottom: 28, fontSize: 14 }}>Cole seu token de acesso para começar</p>
                 <div style={{ textAlign: 'left', marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Token de Acesso</label><input className="input" type="text" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Cole seu token aqui" /></div>
-                <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} onClick={handleConnect} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Conectando...</> : <><Icon name="link" size={16} />Conectar Meta Ads</>}</button>
-                <p style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 16 }}>Obtenha seu token em developers.facebook.com</p>
+                <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} onClick={handleConnect} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Conectando...</> : <><Icon name="link" size={16} />Conectar</>}</button>
               </div>
             ) : page === 'dashboard' ? (
               <>
-                {/* Stats Cards */}
                 <div className="stats-grid">
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon green"><Icon name="dollarSign" size={18} /></div></div>
-                    <div className="stat-value">{fmt.moneyCompact(totals.spend)}</div>
-                    <div className="stat-label">Investimento Total</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon blue"><Icon name="shoppingBag" size={18} /></div></div>
-                    <div className="stat-value">{fmt.numCompact(totals.conversions)}</div>
-                    <div className="stat-label">Conversões</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon purple"><Icon name="target" size={18} /></div></div>
-                    <div className="stat-value">{totals.conversions > 0 ? fmt.money(totals.spend / totals.conversions) : '-'}</div>
-                    <div className="stat-label">CPA Médio</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon yellow"><Icon name="mousePointer" size={18} /></div></div>
-                    <div className="stat-value">{totals.impressions > 0 ? ((totals.clicks / totals.impressions) * 100).toFixed(2) : '0.00'}%</div>
-                    <div className="stat-label">CTR Médio</div>
-                  </div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="dollarSign" size={18} /></div></div><div className="stat-value">{fmt.moneyCompact(totals.spend)}</div><div className="stat-label">Investimento</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="shoppingBag" size={18} /></div></div><div className="stat-value">{fmt.numCompact(totals.conversions)}</div><div className="stat-label">Conversões</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon purple"><Icon name="target" size={18} /></div></div><div className="stat-value">{totals.conversions > 0 ? fmt.money(totals.spend / totals.conversions) : '-'}</div><div className="stat-label">CPA Médio</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="mousePointer" size={18} /></div></div><div className="stat-value">{totals.impressions > 0 ? ((totals.clicks / totals.impressions) * 100).toFixed(2) : '0.00'}%</div><div className="stat-label">CTR Médio</div></div>
                 </div>
 
-                {/* AI Summary */}
                 {campaigns.length > 0 && (
                   <div className="ai-summary">
                     <div className="ai-icon"><Icon name="sparkles" size={22} /></div>
                     <div className="ai-content">
                       <div className="ai-header"><span className="ai-title">Resumo Inteligente</span><span className="ai-badge">IA</span></div>
                       <p className="ai-text">
-                        Você tem <strong>{campaigns.length} campanhas</strong> ativas com {fmt.moneyCompact(totals.spend)} investidos.
-                        {summary.critical > 0 && <> <strong className="danger">{summary.critical}</strong> precisam de atenção urgente.</>}
-                        {summary.scalable > 0 && <> <strong className="success">{summary.scalable}</strong> estão prontas para escalar.</>}
+                        Você tem <strong>{campaigns.length} campanhas</strong> com {fmt.moneyCompact(totals.spend)} investidos.
+                        {summary.critical > 0 && <> <strong className="danger">{summary.critical}</strong> precisam de atenção.</>}
+                        {summary.scalable > 0 && <> <strong className="success">{summary.scalable}</strong> prontas para escalar.</>}
                         {totals.conversions > 0 && <> CPA médio de <strong>{fmt.money(totals.spend / totals.conversions)}</strong>.</>}
                       </p>
                       <div className="ai-actions">
                         <button className="btn btn-sm btn-secondary" onClick={() => setPage('insights')}><Icon name="sparkles" size={12} />Ver Insights</button>
-                        {summary.critical > 0 && <button className="btn btn-sm btn-danger"><Icon name="alertTriangle" size={12} />Ver Problemas</button>}
+                        {summary.critical > 0 && <button className="btn btn-sm btn-danger" onClick={() => { setPage('campaigns'); setFilter('critical'); }}><Icon name="alertTriangle" size={12} />Ver Problemas</button>}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Quick Stats */}
+                <div className="quick-actions">
+                  <div className="quick-action" onClick={() => setPage('campaigns')}><div className="quick-action-icon" style={{ background: 'var(--accent-primary-muted)', color: 'var(--accent-primary)' }}><Icon name="target" size={22} /></div><div className="quick-action-title">Campanhas</div><div className="quick-action-desc">{filterCounts.active} ativas</div></div>
+                  <div className="quick-action" onClick={() => setPage('creatives')}><div className="quick-action-icon" style={{ background: 'var(--accent-info-muted)', color: 'var(--accent-info)' }}><Icon name="image" size={22} /></div><div className="quick-action-title">Criativos</div><div className="quick-action-desc">{ads.length} anúncios</div></div>
+                  <div className="quick-action" onClick={() => setPage('audience')}><div className="quick-action-icon" style={{ background: 'var(--accent-purple-muted)', color: 'var(--accent-purple)' }}><Icon name="users" size={22} /></div><div className="quick-action-title">Público</div><div className="quick-action-desc">Análise detalhada</div></div>
+                  <div className="quick-action" onClick={() => setPage('insights')}><div className="quick-action-icon" style={{ background: 'var(--accent-warning-muted)', color: 'var(--accent-warning)' }}><Icon name="lightbulb" size={22} /></div><div className="quick-action-title">Insights</div><div className="quick-action-desc">{summary.scalable + summary.critical} ações</div></div>
+                </div>
+
                 <div className="audience-grid">
                   <div className="audience-card">
-                    <div className="audience-card-title"><Icon name="target" size={18} />Campanhas</div>
+                    <div className="audience-title"><Icon name="target" size={18} />Campanhas</div>
                     <div className="audience-item"><div className="audience-info"><div className="audience-name">Total</div></div><div className="audience-value">{campaigns.length}</div></div>
                     <div className="audience-item"><div className="audience-info"><div className="audience-name">Ativas</div></div><div className="audience-value" style={{ color: 'var(--accent-primary)' }}>{filterCounts.active}</div></div>
                     <div className="audience-item"><div className="audience-info"><div className="audience-name">Críticas</div></div><div className="audience-value" style={{ color: 'var(--accent-danger)' }}>{summary.critical}</div></div>
                     <div className="audience-item"><div className="audience-info"><div className="audience-name">Para Escalar</div></div><div className="audience-value" style={{ color: 'var(--accent-primary)' }}>{summary.scalable}</div></div>
                   </div>
                   <div className="audience-card">
-                    <div className="audience-card-title"><Icon name="activity" size={18} />Métricas</div>
+                    <div className="audience-title"><Icon name="activity" size={18} />Métricas</div>
                     <div className="audience-item"><div className="audience-info"><div className="audience-name">Impressões</div></div><div className="audience-value">{fmt.numCompact(totals.impressions)}</div></div>
                     <div className="audience-item"><div className="audience-info"><div className="audience-name">Cliques</div></div><div className="audience-value">{fmt.numCompact(totals.clicks)}</div></div>
-                    <div className="audience-item"><div className="audience-info"><div className="audience-name">CTR</div></div><div className="audience-value">{totals.impressions > 0 ? ((totals.clicks / totals.impressions) * 100).toFixed(2) : '0.00'}%</div></div>
+                    <div className="audience-item"><div className="audience-info"><div className="audience-name">CTR</div></div><div className="audience-value">{totals.impressions > 0 ? ((totals.clicks / totals.impressions) * 100).toFixed(2) : '0'}%</div></div>
                     <div className="audience-item"><div className="audience-info"><div className="audience-name">Conversões</div></div><div className="audience-value" style={{ color: 'var(--accent-primary)' }}>{totals.conversions}</div></div>
                   </div>
                 </div>
@@ -1246,62 +1076,55 @@ export default function App() {
                   <div className={`filter-chip ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Todas <span className="count">{filterCounts.all}</span></div>
                   <div className={`filter-chip ${filter === 'active' ? 'active' : ''}`} onClick={() => setFilter('active')}>Ativas <span className="count">{filterCounts.active}</span></div>
                   <div className={`filter-chip ${filter === 'critical' ? 'active' : ''}`} onClick={() => setFilter('critical')}><Icon name="alertTriangle" size={12} />Críticas <span className="count">{filterCounts.critical}</span></div>
-                  <div className={`filter-chip ${filter === 'scale' ? 'active' : ''}`} onClick={() => setFilter('scale')}><Icon name="rocket" size={12} />Para Escalar <span className="count">{filterCounts.scale}</span></div>
-                  <div className="search-box">
-                    <Icon name="search" size={14} className="search-icon" />
-                    <input className="search-input" placeholder="Buscar campanha..." value={search} onChange={e => setSearch(e.target.value)} />
-                  </div>
+                  <div className={`filter-chip ${filter === 'scale' ? 'active' : ''}`} onClick={() => setFilter('scale')}><Icon name="rocket" size={12} />Escalar <span className="count">{filterCounts.scale}</span></div>
+                  <div className="search-box"><Icon name="search" size={14} className="search-icon" /><input className="search-input" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} /></div>
                 </div>
                 <div className="campaigns-list">
                   {filteredCampaigns.length === 0 ? (
-                    <div className="empty-state"><Icon name="target" size={48} className="empty-icon" /><h3 className="empty-title">Nenhuma campanha encontrada</h3><p className="empty-text">Tente ajustar os filtros</p></div>
+                    <div className="empty-state"><Icon name="target" size={48} className="empty-icon" /><h3 className="empty-title">Nenhuma campanha</h3><p className="empty-text">Ajuste os filtros</p></div>
                   ) : filteredCampaigns.map(c => (
-                    <CampaignRow key={c.id} campaign={c} expanded={expandedId === c.id} onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)} onAction={handleAction} activeTab={activeTab} setActiveTab={setActiveTab} />
+                    <CampaignRow key={c.id} campaign={c} expanded={expandedId === c.id} onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)} onAction={handleAction} activeTab={activeTab} setActiveTab={setActiveTab} loading={loading} />
                   ))}
                 </div>
               </>
             ) : page === 'creatives' ? (
               <>
                 <div className="stats-grid">
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="image" size={18} /></div></div><div className="stat-value">{ads.length}</div><div className="stat-label">Total de Anúncios</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="trophy" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.score ?? 0) >= 70).length}</div><div className="stat-label">Top Performers</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="alertTriangle" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 2.5 && (a.metrics?.frequency || 0) <= 4).length}</div><div className="stat-label">Em Fadiga</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="flame" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 4).length}</div><div className="stat-label">Fadiga Crítica</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="image" size={18} /></div></div><div className="stat-value">{ads.length}</div><div className="stat-label">Total</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="trophy" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.score || 0) >= 70).length}</div><div className="stat-label">Top Performers</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="alertTriangle" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 2.5).length}</div><div className="stat-label">Em Fadiga</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="flame" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 4).length}</div><div className="stat-label">Críticos</div></div>
                 </div>
-                
                 {loadingAds ? (
-                  <div className="empty-state"><Icon name="refreshCw" size={48} className="empty-icon animate-spin" /><h3 className="empty-title">Carregando criativos...</h3></div>
+                  <div className="empty-state"><Icon name="refreshCw" size={48} className="empty-icon animate-spin" /><h3 className="empty-title">Carregando...</h3></div>
                 ) : ads.length === 0 ? (
-                  <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Nenhum anúncio encontrado</h3><p className="empty-text">Os anúncios aparecerão aqui</p></div>
+                  <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Nenhum anúncio</h3></div>
                 ) : (
                   <>
                     <div className="section-header"><div className="section-title"><Icon name="trophy" size={18} style={{ color: 'var(--accent-warning)' }} />Top Performers</div></div>
-                    <div className="cards-grid">{ads.filter(a => (a.score ?? 0) >= 60).slice(0, 6).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={i + 1} />)}</div>
-                    
-                    {ads.filter(a => (a.metrics?.frequency || 0) > 2.5).length > 0 && (
-                      <>
-                        <div className="section-header" style={{ marginTop: 24 }}><div className="section-title"><Icon name="alertTriangle" size={18} style={{ color: 'var(--accent-warning)' }} />Criativos com Fadiga</div></div>
-                        <div className="cards-grid">{ads.filter(a => (a.metrics?.frequency || 0) > 2.5).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={999} />)}</div>
-                      </>
-                    )}
+                    <div className="cards-grid">{ads.filter(a => (a.score || 0) >= 50).slice(0, 6).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={i + 1} />)}</div>
                   </>
                 )}
               </>
             ) : page === 'audience' ? (
               <>
-                {audienceAnalysis.insights.length > 0 && (
-                  <div className="recommendations-grid" style={{ marginBottom: 20 }}>
-                    {audienceAnalysis.insights.map((insight, i) => (
-                      <div key={i} className={`recommendation-card ${insight.type}`}>
-                        <div className="rec-icon"><Icon name={insight.icon} size={20} /></div>
-                        <div className="rec-content"><div className="rec-title">{insight.title}</div><div className="rec-desc">{insight.desc}</div></div>
+                {audienceInsights.length > 0 && (
+                  <div className="insights-grid">
+                    {audienceInsights.map((ins, i) => (
+                      <div key={i} className={`insight-card ${ins.type}`}>
+                        <div className="insight-icon"><Icon name={ins.icon} size={20} /></div>
+                        <div className="insight-content"><div className="insight-title">{ins.title}</div><div className="insight-desc">{ins.desc}</div></div>
                       </div>
                     ))}
                   </div>
                 )}
                 <div className="audience-grid">
-                  <AudienceBarChart data={audienceAnalysis.gender} label="Gênero" valueKey="conversions" />
-                  <AudienceBarChart data={audienceAnalysis.age} label="Idade" valueKey="conversions" />
+                  <AudienceSection data={breakdown?.ageGender?.byGender || breakdown?.byGender} title="Por Gênero" icon="users" type="gender" />
+                  <AudienceSection data={breakdown?.ageGender?.byAge || breakdown?.byAge} title="Por Idade" icon="calendar" type="age" />
+                </div>
+                <div className="audience-grid">
+                  <AudienceSection data={breakdown?.devices} title="Por Dispositivo" icon="smartphone" type="device" />
+                  <AudienceSection data={breakdown?.placements} title="Por Posicionamento" icon="layers" type="placement" />
                 </div>
               </>
             ) : page === 'insights' ? (
@@ -1311,69 +1134,51 @@ export default function App() {
                   <div className="ai-content">
                     <div className="ai-header"><span className="ai-title">Central de Inteligência</span><span className="ai-badge">IA</span></div>
                     <p className="ai-text">
-                      Análise completa da sua conta com <strong>{recommendations.length} recomendações</strong> personalizadas.
-                      {summary.critical > 0 && <> Atenção: <strong className="danger">{summary.critical} campanhas</strong> precisam de ação imediata.</>}
-                      {summary.scalable > 0 && <> Oportunidade: <strong className="success">{summary.scalable} campanhas</strong> podem ser escaladas.</>}
+                      Análise completa da sua conta.
+                      {summary.critical > 0 && <> <strong className="danger">{summary.critical} campanhas</strong> precisam de ação.</>}
+                      {summary.scalable > 0 && <> <strong className="success">{summary.scalable} campanhas</strong> podem escalar.</>}
                     </p>
                   </div>
                 </div>
-                
-                <div className="section-header"><div className="section-title"><Icon name="zap" size={18} />Recomendações Prioritárias</div></div>
-                <div className="recommendations-grid">
-                  {recommendations.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                      <Icon name="checkCircle" size={48} style={{ marginBottom: 12, opacity: 0.5 }} />
-                      <div>Sua conta está saudável! Sem recomendações urgentes.</div>
-                    </div>
-                  ) : recommendations.map((rec, i) => (
-                    <div key={i} className={`recommendation-card ${rec.type}`}>
-                      <div className="rec-icon"><Icon name={rec.icon} size={20} /></div>
-                      <div className="rec-content"><div className="rec-title">{rec.title}</div><div className="rec-desc">{rec.desc}</div></div>
-                      <div className="rec-action"><button className={`btn btn-sm btn-${rec.actionType}`}>{rec.action}</button></div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="section-header" style={{ marginTop: 24 }}><div className="section-title"><Icon name="alertTriangle" size={18} />Problemas Detectados</div></div>
+
+                <div className="section-header"><div className="section-title"><Icon name="alertTriangle" size={18} />Problemas</div></div>
                 <div className="issues-grid" style={{ marginBottom: 24 }}>
                   {campaigns.flatMap(c => (c.analysis?.issues || []).map((issue, i) => (
                     <div key={`${c.id}-${i}`} className={`issue-card ${issue.severity}`}>
                       <div className="issue-icon"><Icon name={issue.icon} size={16} /></div>
-                      <div className="issue-content"><div className="issue-title">{issue.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {issue.desc}</div></div>
+                      <div className="issue-content"><div className="issue-title">{c.name}</div><div className="issue-desc">{issue.title}: {issue.desc}</div></div>
                     </div>
                   ))).slice(0, 6)}
-                  {campaigns.every(c => !c.analysis?.issues?.length) && <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}><Icon name="checkCircle" size={40} style={{ marginBottom: 12, opacity: 0.5 }} /><div>Nenhum problema detectado!</div></div>}
+                  {campaigns.every(c => !c.analysis?.issues?.length) && <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}><Icon name="checkCircle" size={40} style={{ opacity: 0.5 }} /><div>Nenhum problema!</div></div>}
                 </div>
-                
+
                 <div className="section-header"><div className="section-title"><Icon name="rocket" size={18} />Oportunidades</div></div>
                 <div className="issues-grid">
                   {campaigns.flatMap(c => (c.analysis?.opportunities || []).map((opp, i) => (
                     <div key={`${c.id}-o-${i}`} className="issue-card opportunity">
                       <div className="issue-icon"><Icon name={opp.icon} size={16} /></div>
-                      <div className="issue-content"><div className="issue-title">{opp.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {opp.desc}</div></div>
+                      <div className="issue-content"><div className="issue-title">{c.name}</div><div className="issue-desc">{opp.title}: {opp.desc}</div></div>
                     </div>
                   ))).slice(0, 6)}
-                  {campaigns.every(c => !c.analysis?.opportunities?.length) && <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}><Icon name="lightbulb" size={40} style={{ marginBottom: 12, opacity: 0.5 }} /><div>Melhore as campanhas para desbloquear oportunidades.</div></div>}
+                  {campaigns.every(c => !c.analysis?.opportunities?.length) && <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}><Icon name="lightbulb" size={40} style={{ opacity: 0.5 }} /><div>Melhore as campanhas para desbloquear</div></div>}
                 </div>
               </>
             ) : page === 'settings' ? (
               <div className="settings-grid">
                 <div className="settings-card">
-                  <div className="settings-card-title"><Icon name="link" size={18} />Conexão Meta</div>
+                  <div className="settings-title"><Icon name="link" size={18} />Conexão Meta</div>
                   <div className="settings-row"><span className="settings-label">Status</span><span className={`connection-badge ${connected ? 'connected' : 'disconnected'}`}><span className="connection-dot"></span>{connected ? 'Conectado' : 'Desconectado'}</span></div>
-                  {connected && accounts.length > 0 && <div className="settings-row"><span className="settings-label">Conta</span><span className="settings-value">{accounts.find(a => a.id === selectedAccount)?.name || selectedAccount}</span></div>}
+                  {connected && selectedAccount && <div className="settings-row"><span className="settings-label">Conta</span><span className="settings-value">{accounts.find(a => a.id === selectedAccount)?.name || selectedAccount}</span></div>}
                   {connected && <div style={{ marginTop: 16 }}><button className="btn btn-danger" onClick={handleDisconnect}><Icon name="x" size={16} />Desconectar</button></div>}
                 </div>
                 <div className="settings-card">
-                  <div className="settings-card-title"><Icon name="user" size={18} />Conta</div>
+                  <div className="settings-title"><Icon name="user" size={18} />Conta</div>
                   <div className="settings-row"><span className="settings-label">Usuário</span><span className="settings-value">{user?.name || '-'}</span></div>
                   <div className="settings-row"><span className="settings-label">Email</span><span className="settings-value">{user?.email || '-'}</span></div>
-                  <div style={{ marginTop: 16 }}><button className="btn btn-secondary" onClick={handleLogout}><Icon name="logOut" size={16} />Sair da Conta</button></div>
+                  <div style={{ marginTop: 16 }}><button className="btn btn-secondary" onClick={handleLogout}><Icon name="logOut" size={16} />Sair</button></div>
                 </div>
               </div>
-            ) : (
-              <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Em breve</h3><p className="empty-text">Seção em desenvolvimento.</p></div>
-            )}
+            ) : null}
           </div>
         </main>
       </div>
