@@ -513,14 +513,14 @@ export default function App() {
           setConnected(true);
           // Carregar contas ao iniciar
           const res = await api.get('/api/meta/ad-accounts');
-          if (res.success && res.accounts?.length > 0) {
-            setAccounts(res.accounts);
+          if (res.success && res.adAccounts?.length > 0) {
+            setAccounts(res.adAccounts);
             const savedAccount = localStorage.getItem('adbrain_account');
-            if (savedAccount && res.accounts.find(a => a.id === savedAccount)) {
+            if (savedAccount && res.adAccounts.find(a => a.id === savedAccount)) {
               setSelectedAccount(savedAccount);
             } else {
-              setSelectedAccount(res.accounts[0].id);
-              localStorage.setItem('adbrain_account', res.accounts[0].id);
+              setSelectedAccount(res.adAccounts[0].id);
+              localStorage.setItem('adbrain_account', res.adAccounts[0].id);
             }
           }
         } 
@@ -534,14 +534,14 @@ export default function App() {
     if (connected && accounts.length === 0) {
       const fetchAccounts = async () => {
         const res = await api.get('/api/meta/ad-accounts');
-        if (res.success && res.accounts?.length > 0) {
-          setAccounts(res.accounts);
+        if (res.success && res.adAccounts?.length > 0) {
+          setAccounts(res.adAccounts);
           const savedAccount = localStorage.getItem('adbrain_account');
-          if (savedAccount && res.accounts.find(a => a.id === savedAccount)) {
+          if (savedAccount && res.adAccounts.find(a => a.id === savedAccount)) {
             setSelectedAccount(savedAccount);
           } else {
-            setSelectedAccount(res.accounts[0].id);
-            localStorage.setItem('adbrain_account', res.accounts[0].id);
+            setSelectedAccount(res.adAccounts[0].id);
+            localStorage.setItem('adbrain_account', res.adAccounts[0].id);
           }
         }
       };
@@ -560,7 +560,7 @@ export default function App() {
     setLoading(false);
   };
 
-  const loadAccounts = async () => { const res = await api.get('/api/meta/ad-accounts'); if (res.success && res.accounts?.length > 0) { setAccounts(res.accounts); const first = res.accounts[0].id; setSelectedAccount(first); localStorage.setItem('adbrain_account', first); } };
+  const loadAccounts = async () => { const res = await api.get('/api/meta/ad-accounts'); if (res.success && res.adAccounts?.length > 0) { setAccounts(res.adAccounts); const first = res.adAccounts[0].id; setSelectedAccount(first); localStorage.setItem('adbrain_account', first); } };
 
   const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao fazer login'); };
   const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
