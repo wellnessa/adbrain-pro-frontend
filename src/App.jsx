@@ -807,6 +807,466 @@ export default function App() {
 
   const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
 
+  const audienceInsights = useMemo(() => {
+    const insights = [];
+    const bd = breakdown?.ageGender || breakdown;
+    if (bd?.byGender?.length >= 2) {
+      const sorted = [...bd.byGender].filter(g => g.conversions > 0).sort((a, b) => (a.cpa || Infinity) - (b.cpa || Infinity));
+      if (sorted.length >= 2 && sorted[0].cpa && sorted[1].cpa) {
+        const diff = Math.round(((sorted[1].cpa - sorted[0].cpa) / sorted[1].cpa) * 100);
+        if (diff > 15) insights.push({ type: 'success', icon: 'users', title: `${sorted[0].label || (sorted[0].gender === 'male' ? 'Homens' : 'Mulheres')} convertem ${diff}% mais barato`, desc: `CPA de ${fmt.money(sorted[0].cpa)} vs ${fmt.money(sorted[1].cpa)}. Considere focar nesse público.` });
+      }
+    }
+    if (bd?.byAge?.length > 0) {
+      const withConv = bd.byAge.filter(a => a.conversions > 0);
+      if (withConv.length > 0) {
+        const best = withConv.reduce((b, a) => (a.cpa || Infinity) < (b.cpa || Infinity) ? a : b);
+        insights.push({ type: 'info', icon: 'calendar', title: `Melhor faixa etária: ${best.age}`, desc: `CPA de ${fmt.money(best.cpa)} com ${best.conversions} conversões.` });
+      }
+    }
+    return insights;
+  }, [breakdown]);
+
+  useEffect(() => { if (error || success) { const t = setTimeout(() => { setError(''); setSuccess(''); }, 4000); return () => clearTimeout(t); } }, [error, success]);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('adbrain_user');
+    const savedToken = localStorage.getItem('adbrain_meta_token');
+    const savedAccount = localStorage.getItem('adbrain_account');
+    if (savedUser) { 
+      setUser(JSON.parse(savedUser)); 
+      setPage('dashboard'); 
+      if (savedToken) { 
+        setToken(savedToken); 
+        setConnected(true); 
+        api.get('/api/meta/ad-accounts').then(res => {
+          const list = res.adAccounts || res.accounts || [];
+          if (res.success && list.length > 0) {
+            setAccounts(list);
+            const acc = savedAccount && list.some(a => a.id === savedAccount) ? savedAccount : list[0].id;
+            setSelectedAccount(acc);
+            localStorage.setItem('adbrain_account', acc);
+          }
+        });
+      }
+    }
+  }, []);
+
+  useEffect(() => { if (connected && selectedAccount) loadData(); }, [selectedAccount, dateRange]);
+  useEffect(() => { if (page === 'creatives' && connected && selectedAccount && ads.length === 0) loadAds(); }, [page, selectedAccount]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [campRes, breakRes] = await Promise.all([
+        api.get(`/api/meta/campaigns/${selectedAccount}?date_preset=${dateRange}`),
+        api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`)
+      ]);
+      if (campRes.success) {
+        const processed = (campRes.campaigns || []).map(c => ({ ...c, score: AIEngine.calcScore(c), analysis: AIEngine.analyze(c) }));
+        setCampaigns(processed);
+      }
+      if (breakRes.success) setBreakdown(breakRes.breakdown);
+    } catch (e) { setError('Erro ao carregar'); }
+    setLoading(false);
+  };
+
+  const loadAds = async () => {
+    setLoadingAds(true);
+    try {
+      const res = await api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`);
+      if (res.success) setAds((res.ads || []).sort((a, b) => (b.score || 0) - (a.score || 0)));
+    } catch (e) { console.error(e); }
+    setLoadingAds(false);
+  };
+
+  const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('dashboard'); } else setError(res.error || 'Erro ao entrar'); };
+  
+  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('dashboard'); } else setError(res.error || 'Erro ao criar conta'); };
+  
+  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setCampaigns([]); setAds([]); setPage('login'); };
+  
+  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Conectado!'); const accRes = await api.get('/api/meta/ad-accounts'); const list = accRes.adAccounts || accRes.accounts || []; if (list.length > 0) { setAccounts(list); setSelectedAccount(list[0].id); localStorage.setItem('adbrain_account', list[0].id); } } else setError(res.error || 'Token inválido'); };
+  
+  const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
+
+  // Password Reset Handlers
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail) { setError('Digite seu email'); return; }
+    setLoading(true);
+    const res = await api.post('/api/auth/forgot-password', { email: resetEmail });
+    setLoading(false);
+    if (res.success) {
+      setSuccess('Código enviado para seu email!');
+      setResetStep(2);
+    } else {
+      setError(res.error || 'Erro ao enviar código');
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetCode || resetCode.length !== 6) { setError('Digite o código de 6 dígitos'); return; }
+    if (!newPassword || newPassword.length < 6) { setError('Senha deve ter no mínimo 6 caracteres'); return; }
+    if (newPassword !== confirmPassword) { setError('Senhas não conferem'); return; }
+    
+    setLoading(true);
+    const res = await api.post('/api/auth/reset-password', { 
+      email: resetEmail, 
+      code: resetCode, 
+      newPassword: newPassword 
+    });
+    setLoading(false);
+    
+    if (res.success) {
+      setSuccess('Senha alterada com sucesso!');
+      setResetStep(0);
+      setResetEmail('');
+      setResetCode('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPage('login');
+    } else {
+      setError(res.error || 'Erro ao alterar senha');
+    }
+  };
+
+  const handleAction = async (action, campaignId) => {
+    if (action === 'pause' || action === 'resume') {
+      setLoading(true);
+      const res = await api.post(`/api/meta/campaigns/${campaignId}/${action}`);
+      setLoading(false);
+      if (res.success) { setSuccess(`Campanha ${action === 'pause' ? 'pausada' : 'ativada'}!`); loadData(); }
+      else setError(res.error || 'Erro');
+    } else if (action === 'scale') {
+      setSuccess('Função de escalar em desenvolvimento');
+    } else if (action === 'duplicate') {
+      setSuccess('Função de duplicar em desenvolvimento');
+    }
+  };
+
+  // =============================================================================
+  // AUTH SCREENS
+  // =============================================================================
+  if (!user) {
+    return (
+      <><style>{styles}</style>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', padding: 20 }}>
+          <div style={{ width: '100%', maxWidth: 380 }}>
+            <div style={{ textAlign: 'center', marginBottom: 32 }}>
+              <div style={{ width: 56, height: 56, background: 'linear-gradient(135deg, var(--accent-primary) 0%, #059669 100%)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 0 30px rgba(16,185,129,0.3)' }}><Icon name="brain" size={28} style={{ stroke: 'white' }} /></div>
+              <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>AdBrain Pro</h1>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Gestão inteligente de campanhas</p>
+            </div>
+            
+            {(error || success) && <div className="toast" style={{ position: 'relative', top: 0, right: 0, marginBottom: 16 }}><div className={`toast-content ${error ? 'error' : 'success'}`}><Icon name={error ? 'alertCircle' : 'checkCircle'} size={16} />{error || success}</div></div>}
+            
+            <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: 24 }}>
+              
+              {/* LOGIN */}
+              {page === 'login' && resetStep === 0 && (
+                <form onSubmit={handleLogin}>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required /></div>
+                  <div style={{ marginBottom: 12 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required /></div>
+                  <div style={{ textAlign: 'right', marginBottom: 20 }}>
+                    <button type="button" className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => setResetStep(1)}>Esqueci minha senha</button>
+                  </div>
+                  <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Entrando...</> : 'Entrar'}</button>
+                </form>
+              )}
+              
+              {/* REGISTER */}
+              {page === 'register' && resetStep === 0 && (
+                <form onSubmit={handleRegister}>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome</label><input className="input" type="text" value={authName} onChange={e => setAuthName(e.target.value)} required /></div>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required /></div>
+                  <div style={{ marginBottom: 20 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required /></div>
+                  <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Criando...</> : 'Criar Conta'}</button>
+                </form>
+              )}
+              
+              {/* FORGOT PASSWORD - Step 1: Email */}
+              {resetStep === 1 && (
+                <form onSubmit={handleForgotPassword}>
+                  <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                    <div style={{ width: 48, height: 48, background: 'var(--accent-info-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="keyRound" size={24} style={{ color: 'var(--accent-info)' }} /></div>
+                    <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Esqueceu a senha?</h2>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Digite seu email para receber o código</p>
+                  </div>
+                  <div style={{ marginBottom: 20 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} placeholder="seu@email.com" required /></div>
+                  <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Enviando...</> : <><Icon name="send" size={16} />Enviar Código</>}</button>
+                  <div style={{ textAlign: 'center', marginTop: 16 }}><button type="button" className="btn btn-ghost" onClick={() => { setResetStep(0); setResetEmail(''); }}><Icon name="chevronLeft" size={14} />Voltar ao login</button></div>
+                </form>
+              )}
+              
+              {/* FORGOT PASSWORD - Step 2: Code + New Password */}
+              {resetStep === 2 && (
+                <form onSubmit={handleResetPassword}>
+                  <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                    <div style={{ width: 48, height: 48, background: 'var(--accent-primary-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Icon name="mail" size={24} style={{ color: 'var(--accent-primary)' }} /></div>
+                    <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Verifique seu email</h2>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Enviamos um código de 6 dígitos para <strong style={{ color: 'var(--text-primary)' }}>{resetEmail}</strong></p>
+                  </div>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Código de 6 dígitos</label><input className="input" type="text" value={resetCode} onChange={e => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" maxLength={6} style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8, fontFamily: 'var(--font-mono)' }} required /></div>
+                  <div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Nova senha</label><input className="input" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" required /></div>
+                  <div style={{ marginBottom: 20 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Confirmar senha</label><input className="input" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repita a senha" required /></div>
+                  <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Alterando...</> : <><Icon name="shieldCheck" size={16} />Alterar Senha</>}</button>
+                  <div style={{ textAlign: 'center', marginTop: 16 }}>
+                    <button type="button" className="btn btn-ghost" onClick={() => setResetStep(1)}><Icon name="chevronLeft" size={14} />Voltar</button>
+                    <button type="button" className="btn btn-ghost" onClick={handleForgotPassword} disabled={loading}>Reenviar código</button>
+                  </div>
+                </form>
+              )}
+              
+              {resetStep === 0 && (
+                <div style={{ textAlign: 'center', marginTop: 16 }}><button className="btn btn-ghost" onClick={() => setPage(page === 'login' ? 'register' : 'login')}>{page === 'login' ? 'Criar conta' : 'Já tenho conta'}</button></div>
+              )}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // =============================================================================
+  // MAIN APP
+  // =============================================================================
+  return (
+    <><style>{styles}</style>
+      <div className="app-layout">
+        <aside className="sidebar">
+          <div className="sidebar-header"><div className="sidebar-logo"><div className="logo-mark"><Icon name="brain" size={20} /></div><div><span className="logo-title">AdBrain</span><br/><span className="logo-subtitle">AI-Powered</span></div></div></div>
+          <nav className="sidebar-nav">
+            <div className="nav-group">
+              <div className="nav-group-label">Menu</div>
+              <div className={`nav-item ${page === 'dashboard' ? 'active' : ''}`} onClick={() => setPage('dashboard')}><Icon name="layoutDashboard" size={18} />Dashboard</div>
+              <div className={`nav-item ${page === 'campaigns' ? 'active' : ''}`} onClick={() => setPage('campaigns')}><Icon name="target" size={18} />Campanhas{filterCounts.critical > 0 && <span className="nav-badge">{filterCounts.critical}</span>}</div>
+              <div className={`nav-item ${page === 'creatives' ? 'active' : ''}`} onClick={() => setPage('creatives')}><Icon name="image" size={18} />Criativos</div>
+              <div className={`nav-item ${page === 'audience' ? 'active' : ''}`} onClick={() => setPage('audience')}><Icon name="users" size={18} />Público</div>
+              <div className={`nav-item ${page === 'insights' ? 'active' : ''}`} onClick={() => setPage('insights')}><Icon name="sparkles" size={18} />Insights IA{summary.scalable > 0 && <span className="nav-badge success">{summary.scalable}</span>}</div>
+            </div>
+            <div className="nav-group">
+              <div className="nav-group-label">Sistema</div>
+              <div className={`nav-item ${page === 'settings' ? 'active' : ''}`} onClick={() => setPage('settings')}><Icon name="settings" size={18} />Configurações</div>
+              <div className="nav-item" onClick={handleLogout}><Icon name="logOut" size={18} />Sair</div>
+            </div>
+          </nav>
+        </aside>
+
+        <main className="main-content">
+          <header className="header">
+            <div className="header-left">
+              <div>
+                <h1 className="header-title">{page === 'dashboard' ? 'Dashboard' : page === 'campaigns' ? 'Campanhas' : page === 'creatives' ? 'Criativos' : page === 'audience' ? 'Análise de Público' : page === 'insights' ? 'Insights IA' : 'Configurações'}</h1>
+                <p className="header-subtitle">{page === 'dashboard' ? 'Visão geral da sua conta' : page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Performance dos anúncios' : page === 'audience' ? 'Entenda seu público' : page === 'insights' ? 'Recomendações inteligentes' : 'Configurações da conta'}</p>
+              </div>
+            </div>
+            <div className="header-right">
+              {connected && accounts.length > 0 && (
+                <div className="select-wrap">
+                  <select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>
+                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}
+                  </select>
+                  <Icon name="chevronDown" size={14} className="select-icon" />
+                </div>
+              )}
+              <div className="select-wrap">
+                <select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
+                  {dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+                <Icon name="chevronDown" size={14} className="select-icon" />
+              </div>
+              <button className="btn btn-secondary" onClick={loadData} disabled={loading}><Icon name="refreshCw" size={15} className={loading ? 'animate-spin' : ''} />Atualizar</button>
+            </div>
+          </header>
+
+          {(error || success) && <div className="toast"><div className={`toast-content ${error ? 'error' : 'success'}`}><Icon name={error ? 'alertCircle' : 'checkCircle'} size={16} />{error || success}</div></div>}
+
+          <div className="page-content">
+            {!connected ? (
+              <div style={{ maxWidth: 440, margin: '50px auto', textAlign: 'center' }}>
+                <div style={{ width: 70, height: 70, background: 'var(--accent-info-muted)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}><Icon name="zap" size={36} style={{ color: 'var(--accent-info)' }} /></div>
+                <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 10 }}>Conecte sua conta Meta</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: 28, fontSize: 14 }}>Cole seu token de acesso para começar</p>
+                <div style={{ textAlign: 'left', marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Token de Acesso</label><input className="input" type="text" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Cole seu token aqui" /></div>
+                <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} onClick={handleConnect} disabled={loading}>{loading ? <><Icon name="refreshCw" size={16} className="animate-spin" />Conectando...</> : <><Icon name="link" size={16} />Conectar</>}</button>
+              </div>
+            ) : page === 'dashboard' ? (
+              <>
+                <div className="stats-grid">
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="dollarSign" size={18} /></div></div><div className="stat-value">{fmt.moneyCompact(totals.spend)}</div><div className="stat-label">Investimento</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="shoppingBag" size={18} /></div></div><div className="stat-value">{fmt.numCompact(totals.conversions)}</div><div className="stat-label">Conversões</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon purple"><Icon name="target" size={18} /></div></div><div className="stat-value">{totals.conversions > 0 ? fmt.money(totals.spend / totals.conversions) : '-'}</div><div className="stat-label">CPA Médio</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="mousePointer" size={18} /></div></div><div className="stat-value">{totals.impressions > 0 ? ((totals.clicks / totals.impressions) * 100).toFixed(2) : '0.00'}%</div><div className="stat-label">CTR Médio</div></div>
+                </div>
+
+                {campaigns.length > 0 && (
+                  <div className="ai-summary">
+                    <div className="ai-icon"><Icon name="sparkles" size={22} /></div>
+                    <div className="ai-content">
+                      <div className="ai-header"><span className="ai-title">Resumo Inteligente</span><span className="ai-badge">IA</span></div>
+                      <p className="ai-text">
+                        Você tem <strong>{campaigns.length} campanhas</strong> com {fmt.moneyCompact(totals.spend)} investidos.
+                        {summary.critical > 0 && <> <strong className="danger">{summary.critical}</strong> precisam de atenção.</>}
+                        {summary.scalable > 0 && <> <strong className="success">{summary.scalable}</strong> prontas para escalar.</>}
+                        {totals.conversions > 0 && <> CPA médio de <strong>{fmt.money(totals.spend / totals.conversions)}</strong>.</>}
+                      </p>
+                      <div className="ai-actions">
+                        <button className="btn btn-sm btn-secondary" onClick={() => setPage('insights')}><Icon name="sparkles" size={12} />Ver Insights</button>
+                        {summary.critical > 0 && <button className="btn btn-sm btn-danger" onClick={() => { setPage('campaigns'); setFilter('critical'); }}><Icon name="alertTriangle" size={12} />Ver Problemas</button>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="quick-actions">
+                  <div className="quick-action" onClick={() => setPage('campaigns')}><div className="quick-action-icon" style={{ background: 'var(--accent-primary-muted)', color: 'var(--accent-primary)' }}><Icon name="target" size={22} /></div><div className="quick-action-title">Campanhas</div><div className="quick-action-desc">{filterCounts.active} ativas</div></div>
+                  <div className="quick-action" onClick={() => setPage('creatives')}><div className="quick-action-icon" style={{ background: 'var(--accent-info-muted)', color: 'var(--accent-info)' }}><Icon name="image" size={22} /></div><div className="quick-action-title">Criativos</div><div className="quick-action-desc">{ads.length} anúncios</div></div>
+                  <div className="quick-action" onClick={() => setPage('audience')}><div className="quick-action-icon" style={{ background: 'var(--accent-purple-muted)', color: 'var(--accent-purple)' }}><Icon name="users" size={22} /></div><div className="quick-action-title">Público</div><div className="quick-action-desc">Análise detalhada</div></div>
+                  <div className="quick-action" onClick={() => setPage('insights')}><div className="quick-action-icon" style={{ background: 'var(--accent-warning-muted)', color: 'var(--accent-warning)' }}><Icon name="lightbulb" size={22} /></div><div className="quick-action-title">Insights</div><div className="quick-action-desc">{summary.scalable + summary.critical} ações</div></div>
+                </div>
+              </>
+            ) : page === 'campaigns' ? (
+              <>
+                <div className="filter-bar">
+                  <div className={`filter-chip ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Todas <span className="count">{filterCounts.all}</span></div>
+                  <div className={`filter-chip ${filter === 'active' ? 'active' : ''}`} onClick={() => setFilter('active')}>Ativas <span className="count">{filterCounts.active}</span></div>
+                  <div className={`filter-chip ${filter === 'critical' ? 'active' : ''}`} onClick={() => setFilter('critical')}><Icon name="alertTriangle" size={12} />Críticas <span className="count">{filterCounts.critical}</span></div>
+                  <div className={`filter-chip ${filter === 'scale' ? 'active' : ''}`} onClick={() => setFilter('scale')}><Icon name="rocket" size={12} />Escalar <span className="count">{filterCounts.scale}</span></div>
+                  <div className="search-box"><Icon name="search" size={14} className="search-icon" /><input className="search-input" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} /></div>
+                </div>
+                <div className="campaigns-list">
+                  {filteredCampaigns.length === 0 ? (
+                    <div className="empty-state"><Icon name="target" size={48} className="empty-icon" /><h3 className="empty-title">Nenhuma campanha</h3><p className="empty-text">Ajuste os filtros</p></div>
+                  ) : filteredCampaigns.map(c => (
+                    <CampaignRow key={c.id} campaign={c} expanded={expandedId === c.id} onToggle={() => setExpandedId(expandedId === c.id ? null : c.id)} onAction={handleAction} activeTab={activeTab} setActiveTab={setActiveTab} loading={loading} />
+                  ))}
+                </div>
+              </>
+            ) : page === 'creatives' ? (
+              <>
+                <div className="stats-grid">
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="image" size={18} /></div></div><div className="stat-value">{ads.length}</div><div className="stat-label">Total</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="trophy" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.score || 0) >= 70).length}</div><div className="stat-label">Top Performers</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="alertTriangle" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 2.5).length}</div><div className="stat-label">Em Fadiga</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="flame" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.frequency || 0) > 4).length}</div><div className="stat-label">Críticos</div></div>
+                </div>
+                {loadingAds ? (
+                  <div className="empty-state"><Icon name="refreshCw" size={48} className="empty-icon animate-spin" /><h3 className="empty-title">Carregando...</h3></div>
+                ) : ads.length === 0 ? (
+                  <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Nenhum anúncio</h3></div>
+                ) : (
+                  <>
+                    <div className="section-header"><div className="section-title"><Icon name="trophy" size={18} style={{ color: 'var(--accent-warning)' }} />Top Performers</div></div>
+                    <div className="cards-grid">{ads.filter(a => (a.score || 0) >= 50).slice(0, 6).map((ad, i) => <CreativeCard key={ad.id} ad={ad} rank={i + 1} />)}</div>
+                  </>
+                )}
+              </>
+            ) : page === 'audience' ? (
+              <>
+                {audienceInsights.length > 0 && (
+                  <div className="insights-grid">
+                    {audienceInsights.map((ins, i) => (
+                      <div key={i} className={`insight-card ${ins.type}`}>
+                        <div className="insight-icon"><Icon name={ins.icon} size={20} /></div>
+                        <div className="insight-content"><div className="insight-title">{ins.title}</div><div className="insight-desc">{ins.desc}</div></div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="audience-grid">
+                  <AudienceSection data={breakdown?.ageGender?.byGender || breakdown?.byGender} title="Por Gênero" icon="users" type="gender" />
+                  <AudienceSection data={breakdown?.ageGender?.byAge || breakdown?.byAge} title="Por Idade" icon="calendar" type="age" />
+                </div>
+                <div className="audience-grid">
+                  <AudienceSection data={breakdown?.devices} title="Por Dispositivo" icon="smartphone" type="device" />
+                  <AudienceSection data={breakdown?.placements} title="Por Posicionamento" icon="layers" type="placement" />
+                </div>
+              </>
+            ) : page === 'insights' ? (
+              <>
+                <div className="ai-summary">
+                  <div className="ai-icon"><Icon name="sparkles" size={22} /></div>
+                  <div className="ai-content">
+                    <div className="ai-header"><span className="ai-title">Central de Inteligência</span><span className="ai-badge">IA</span></div>
+                    <p className="ai-text">
+                      Análise completa da sua conta.
+                      {summary.critical > 0 && <> <strong className="danger">{summary.critical} campanhas</strong> precisam de ação.</>}
+                      {summary.scalable > 0 && <> <strong className="success">{summary.scalable} campanhas</strong> podem escalar.</>}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="section-header"><div className="section-title"><Icon name="alertTriangle" size={18} />Problemas</div></div>
+                <div className="issues-grid" style={{ marginBottom: 24 }}>
+                  {campaigns.flatMap(c => (c.analysis?.issues || []).map((issue, i) => (
+                    <div key={`${c.id}-${i}`} className={`issue-card ${issue.severity}`}>
+                      <div className="issue-icon"><Icon name={issue.icon} size={16} /></div>
+                      <div className="issue-content"><div className="issue-title">{c.name}</div><div className="issue-desc">{issue.title}: {issue.desc}</div></div>
+                    </div>
+                  ))).slice(0, 6)}
+                  {campaigns.every(c => !c.analysis?.issues?.length) && <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}><Icon name="checkCircle" size={40} style={{ opacity: 0.5 }} /><div>Nenhum problema!</div></div>}
+                </div>
+
+                <div className="section-header"><div className="section-title"><Icon name="rocket" size={18} />Oportunidades</div></div>
+                <div className="issues-grid">
+                  {campaigns.flatMap(c => (c.analysis?.opportunities || []).map((opp, i) => (
+                    <div key={`${c.id}-o-${i}`} className="issue-card opportunity">
+                      <div className="issue-icon"><Icon name={opp.icon} size={16} /></div>
+                      <div className="issue-content"><div className="issue-title">{c.name}</div><div className="issue-desc">{opp.title}: {opp.desc}</div></div>
+                    </div>
+                  ))).slice(0, 6)}
+                  {campaigns.every(c => !c.analysis?.opportunities?.length) && <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}><Icon name="lightbulb" size={40} style={{ opacity: 0.5 }} /><div>Melhore as campanhas para desbloquear</div></div>}
+                </div>
+              </>
+            ) : page === 'settings' ? (
+              <div className="settings-grid">
+                <div className="settings-card">
+                  <div className="settings-title"><Icon name="link" size={18} />Conexão Meta</div>
+                  <div className="settings-row"><span className="settings-label">Status</span><span className={`connection-badge ${connected ? 'connected' : 'disconnected'}`}><span className="connection-dot"></span>{connected ? 'Conectado' : 'Desconectado'}</span></div>
+                  {connected && selectedAccount && <div className="settings-row"><span className="settings-label">Conta</span><span className="settings-value">{accounts.find(a => a.id === selectedAccount)?.name || selectedAccount}</span></div>}
+                  {connected && <div style={{ marginTop: 16 }}><button className="btn btn-danger" onClick={handleDisconnect}><Icon name="x" size={16} />Desconectar</button></div>}
+                </div>
+                <div className="settings-card">
+                  <div className="settings-title"><Icon name="user" size={18} />Conta</div>
+                  <div className="settings-row"><span className="settings-label">Usuário</span><span className="settings-value">{user?.name || '-'}</span></div>
+                  <div className="settings-row"><span className="settings-label">Email</span><span className="settings-value">{user?.email || '-'}</span></div>
+                  <div style={{ marginTop: 16 }}><button className="btn btn-secondary" onClick={handleLogout}><Icon name="logOut" size={16} />Sair</button></div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
+  const filteredCampaigns = useMemo(() => {
+    let result = campaigns;
+    if (filter === 'active') result = result.filter(c => c.status === 'ACTIVE');
+    if (filter === 'paused') result = result.filter(c => c.status === 'PAUSED');
+    if (filter === 'critical') result = result.filter(c => (c.score?.total ?? c.healthScore ?? 50) < 30);
+    if (filter === 'scale') result = result.filter(c => (c.score?.total ?? c.healthScore ?? 50) >= 70 && (c.insights?.conversions || 0) > 0);
+    if (search) result = result.filter(c => c.name?.toLowerCase().includes(search.toLowerCase()));
+    return result;
+  }, [campaigns, filter, search]);
+
+  const filterCounts = useMemo(() => ({
+    all: campaigns.length,
+    active: campaigns.filter(c => c.status === 'ACTIVE').length,
+    paused: campaigns.filter(c => c.status === 'PAUSED').length,
+    critical: campaigns.filter(c => (c.score?.total ?? c.healthScore ?? 50) < 30).length,
+    scale: campaigns.filter(c => (c.score?.total ?? c.healthScore ?? 50) >= 70 && (c.insights?.conversions || 0) > 0).length,
+  }), [campaigns]);
+
+  const totals = useMemo(() => campaigns.reduce((t, c) => {
+    const ins = c.insights || {};
+    return { spend: t.spend + (ins.spend || 0), conversions: t.conversions + (ins.conversions || 0), clicks: t.clicks + (ins.clicks || 0), impressions: t.impressions + (ins.impressions || 0) };
+  }, { spend: 0, conversions: 0, clicks: 0, impressions: 0 }), [campaigns]);
+
+  const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
+
   // Audience insights
   const audienceInsights = useMemo(() => {
     const insights = [];
