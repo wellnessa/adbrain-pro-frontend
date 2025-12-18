@@ -7,8 +7,13 @@ const API_URL = 'https://adbrain-pro-api.vercel.app';
 
 const api = {
   getHeaders: () => {
-    const token = localStorage.getItem('adbrain_meta_token');
-    return { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) };
+    const jwtToken = localStorage.getItem('adbrain_token');
+    const metaToken = localStorage.getItem('adbrain_meta_token');
+    return { 
+      'Content-Type': 'application/json', 
+      ...(jwtToken && { Authorization: `Bearer ${jwtToken}` }),
+      ...(!jwtToken && metaToken && { Authorization: `Bearer ${metaToken}` })
+    };
   },
   get: async (endpoint) => {
     try {
@@ -62,9 +67,12 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     lightbulb: <><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></>,
     sliders: <><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></>,
     link: <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>,
-    chevronLeft: <polyline points="15 18 9 12 15 6"/>,
-    mail: <><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>,
-    shieldCheck: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></>,
+    layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
+    monitor: <><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></>,
+    smartphone: <><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></>,
+    pieChart: <><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></>,
+    video: <><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></>,
+    trendingDown: <><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>{icons[name] || icons.alertCircle}</svg>;
 };
@@ -173,6 +181,7 @@ const styles = `
   --accent-danger: #ef4444; --accent-danger-muted: rgba(239,68,68,0.12);
   --accent-warning: #f59e0b; --accent-warning-muted: rgba(245,158,11,0.12);
   --accent-info: #3b82f6; --accent-info-muted: rgba(59,130,246,0.12);
+  --accent-pink: #ec4899; --accent-pink-muted: rgba(236,72,153,0.12);
   --font-sans: 'Outfit', -apple-system, sans-serif; --font-mono: 'JetBrains Mono', monospace;
   --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
 }
@@ -359,6 +368,33 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 
 @media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 50px 1fr 85px 85px 100px; } }
 @media (max-width: 1200px) { .settings-grid { grid-template-columns: 1fr; } .score-breakdown { grid-template-columns: repeat(2, 1fr); } }
+
+.creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.creative-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; transition: all 0.2s ease; }
+.creative-card:hover { border-color: var(--border-muted); transform: translateY(-2px); }
+.creative-thumb { height: 140px; background: var(--bg-muted); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.creative-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.creative-status { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+.creative-status.active { background: var(--accent-primary-muted); color: var(--accent-primary); }
+.creative-status.paused { background: var(--bg-elevated); color: var(--text-muted); }
+.creative-indicator { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+.creative-info { padding: 14px; }
+.creative-name { font-size: 13px; font-weight: 600; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.creative-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.creative-metric { }
+.creative-metric-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+.creative-metric-value { font-size: 14px; font-weight: 600; font-family: var(--font-mono); }
+
+.progress-bar { height: 8px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+.audience-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; }
+.audience-card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.audience-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.audience-item:last-child { border-bottom: none; }
+.audience-label { font-size: 13px; color: var(--text-secondary); }
+.audience-value { font-size: 13px; font-weight: 600; font-family: var(--font-mono); }
+.audience-bar-wrap { flex: 1; margin: 0 12px; }
 `;
 
 // =============================================================================
@@ -482,6 +518,7 @@ export default function App() {
   const [dateRange, setDateRange] = useState('last_30d');
   const [campaigns, setCampaigns] = useState([]);
   const [breakdown, setBreakdown] = useState(null);
+  const [ads, setAds] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [activeTab, setActiveTab] = useState('insights');
   const [filter, setFilter] = useState('all');
@@ -489,11 +526,6 @@ export default function App() {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authName, setAuthName] = useState('');
-  const [resetStep, setResetStep] = useState(0);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetCode, setResetCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
 
   const dateOptions = [
     { value: 'today', label: 'Hoje' }, { value: 'yesterday', label: 'Ontem' }, { value: 'last_7d', label: 'Últimos 7 dias' },
@@ -502,73 +534,52 @@ export default function App() {
   ];
 
   useEffect(() => {
-    const init = async () => {
-      const savedUser = localStorage.getItem('adbrain_user');
-      const savedToken = localStorage.getItem('adbrain_meta_token');
-      if (savedUser) { 
-        setUser(JSON.parse(savedUser)); 
-        setPage('campaigns'); 
-        if (savedToken) { 
-          setToken(savedToken); 
-          setConnected(true);
-          // Carregar contas ao iniciar
-          const res = await api.get('/api/meta/ad-accounts');
-          if (res.success && res.adAccounts?.length > 0) {
-            setAccounts(res.adAccounts);
-            const savedAccount = localStorage.getItem('adbrain_account');
-            if (savedAccount && res.adAccounts.find(a => a.id === savedAccount)) {
-              setSelectedAccount(savedAccount);
-            } else {
-              setSelectedAccount(res.adAccounts[0].id);
-              localStorage.setItem('adbrain_account', res.adAccounts[0].id);
-            }
-          }
-        } 
-      }
-    };
-    init();
+    const savedUser = localStorage.getItem('adbrain_user');
+    const savedToken = localStorage.getItem('adbrain_meta_token');
+    const savedAccount = localStorage.getItem('adbrain_account');
+    if (savedUser) { setUser(JSON.parse(savedUser)); setPage('campaigns'); if (savedToken) { setToken(savedToken); setConnected(true); if (savedAccount) setSelectedAccount(savedAccount); } }
   }, []);
 
   useEffect(() => { if (connected && selectedAccount) loadData(); }, [connected, selectedAccount, dateRange]);
-  useEffect(() => { 
-    if (connected && accounts.length === 0) {
-      const fetchAccounts = async () => {
-        const res = await api.get('/api/meta/ad-accounts');
-        if (res.success && res.adAccounts?.length > 0) {
-          setAccounts(res.adAccounts);
-          const savedAccount = localStorage.getItem('adbrain_account');
-          if (savedAccount && res.adAccounts.find(a => a.id === savedAccount)) {
-            setSelectedAccount(savedAccount);
-          } else {
-            setSelectedAccount(res.adAccounts[0].id);
-            localStorage.setItem('adbrain_account', res.adAccounts[0].id);
-          }
-        }
-      };
-      fetchAccounts();
-    }
-  }, [connected]);
   useEffect(() => { if (error || success) { const t = setTimeout(() => { setError(''); setSuccess(''); }, 4000); return () => clearTimeout(t); } }, [error, success]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [campRes, breakRes] = await Promise.all([api.get(`/api/meta/campaigns/${selectedAccount}?date_preset=${dateRange}`), api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`)]);
+      const [campRes, breakRes, adsRes] = await Promise.all([
+        api.get(`/api/meta/campaigns/${selectedAccount}?date_preset=${dateRange}`), 
+        api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`),
+        api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`)
+      ]);
       if (campRes.success) setCampaigns((campRes.campaigns || []).map(c => ({ ...c, score: AIEngine.calcScore(c), analysis: AIEngine.analyze(c) })));
       if (breakRes.success) setBreakdown(breakRes.breakdown);
+      if (adsRes.success) setAds(adsRes.ads || []);
     } catch (e) { setError('Erro ao carregar dados'); }
     setLoading(false);
   };
 
   const loadAccounts = async () => { const res = await api.get('/api/meta/ad-accounts'); if (res.success && res.adAccounts?.length > 0) { setAccounts(res.adAccounts); const first = res.adAccounts[0].id; setSelectedAccount(first); localStorage.setItem('adbrain_account', first); } };
 
-  const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao fazer login'); };
-  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
-  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setPage('login'); };
-  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
-  const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
-  const handleForgotPassword = async (e) => { e.preventDefault(); if (!resetEmail) { setError('Digite seu email'); return; } setLoading(true); const res = await api.post('/api/auth/forgot-password', { email: resetEmail }); setLoading(false); if (res.success) { setSuccess('Código enviado para seu email!'); setResetStep(2); } else { setError(res.error || 'Erro ao enviar código'); } };
-  const handleResetPassword = async (e) => { e.preventDefault(); if (!resetCode || resetCode.length !== 6) { setError('Digite o código de 6 dígitos'); return; } if (newPassword.length < 6) { setError('Senha deve ter no mínimo 6 caracteres'); return; } if (newPassword !== confirmPassword) { setError('Senhas não conferem'); return; } setLoading(true); const res = await api.post('/api/auth/reset-password', { email: resetEmail, code: resetCode, newPassword }); setLoading(false); if (res.success) { setSuccess('Senha alterada com sucesso!'); setResetStep(0); setResetEmail(''); setResetCode(''); setNewPassword(''); setConfirmPassword(''); } else { setError(res.error || 'Erro ao alterar senha'); } };
+  const handleLogin = async (e) => { 
+    e.preventDefault(); 
+    setLoading(true); 
+    const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); 
+    setLoading(false); 
+    if (res.success) { 
+      localStorage.setItem('adbrain_user', JSON.stringify(res.user)); 
+      if (res.token) localStorage.setItem('adbrain_token', res.token);
+      setUser(res.user); 
+      setPage('campaigns');
+      if (res.hasMetaToken) {
+        setConnected(true);
+        loadAccounts();
+      }
+    } else setError(res.error || 'Erro ao fazer login'); 
+  };
+  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); if (res.token) localStorage.setItem('adbrain_token', res.token); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
+  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setAds([]); setBreakdown(null); setPage('login'); };
+  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess(res.tokenSaved ? 'Meta conectado e salvo!' : 'Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
+  const handleDisconnect = async () => { await api.post('/api/meta/disconnect'); localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setAds([]); setBreakdown(null); };
   const handleAction = async (action, campaignId) => {
     setLoading(true);
     let body = { objectId: campaignId, objectType: 'campaign' };
@@ -601,6 +612,35 @@ export default function App() {
   const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
   const filterCounts = useMemo(() => ({ all: campaigns.length, active: campaigns.filter(c => c.effectiveStatus === 'ACTIVE').length, paused: campaigns.filter(c => c.effectiveStatus === 'PAUSED').length, critical: campaigns.filter(c => c.score?.total < 40).length, scale: campaigns.filter(c => c.score?.total >= 75 && c.insights?.conversions > 0).length }), [campaigns]);
 
+  // Stats para criativos
+  const creativeStats = useMemo(() => {
+    const total = ads.length;
+    const active = ads.filter(a => a.effectiveStatus === 'ACTIVE').length;
+    const withSpend = ads.filter(a => (a.insights?.spend || 0) > 0);
+    const avgCtr = withSpend.length > 0 ? withSpend.reduce((s, a) => s + (a.insights?.ctr || 0), 0) / withSpend.length : 0;
+    const bestAd = [...ads].sort((a, b) => (b.insights?.ctr || 0) - (a.insights?.ctr || 0))[0];
+    const worstAd = [...ads].filter(a => (a.insights?.spend || 0) > 20).sort((a, b) => (a.insights?.ctr || 0) - (b.insights?.ctr || 0))[0];
+    return { total, active, avgCtr, bestAd, worstAd };
+  }, [ads]);
+
+  // Stats para público
+  const audienceStats = useMemo(() => {
+    if (!breakdown) return null;
+    const genderData = breakdown.gender || [];
+    const ageData = breakdown.age || [];
+    const deviceData = breakdown.device || [];
+    const placementData = breakdown.placement || [];
+    
+    const totalConv = genderData.reduce((s, g) => s + (g.conversions || 0), 0);
+    const totalSpend = genderData.reduce((s, g) => s + (g.spend || 0), 0);
+    
+    const bestGender = [...genderData].sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0];
+    const bestAge = [...ageData].sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0];
+    const bestDevice = [...deviceData].sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0];
+    
+    return { genderData, ageData, deviceData, placementData, totalConv, totalSpend, bestGender, bestAge, bestDevice };
+  }, [breakdown]);
+
   // LOGIN/REGISTER
   if (page === 'login' || page === 'register') {
     return (
@@ -612,17 +652,14 @@ export default function App() {
               <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>AdBrain Pro</h1>
               <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Gestão inteligente de Facebook Ads</p>
             </div>
-            {(error || success) && <div style={{ background: error ? 'var(--accent-danger-muted)' : 'var(--accent-primary-muted)', border: error ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(16,185,129,0.25)', color: error ? 'var(--accent-danger)' : 'var(--accent-primary)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 18, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name={error ? 'alertCircle' : 'checkCircle'} size={16} />{error || success}</div>}
-            {resetStep === 0 && <form onSubmit={page === 'register' ? handleRegister : handleLogin}>
+            {error && <div style={{ background: 'var(--accent-danger-muted)', border: '1px solid rgba(239,68,68,0.25)', color: 'var(--accent-danger)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 18, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name="alertCircle" size={16} />{error}</div>}
+            <form onSubmit={page === 'register' ? handleRegister : handleLogin}>
               {page === 'register' && <div style={{ marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome</label><input className="input" type="text" value={authName} onChange={(e) => setAuthName(e.target.value)} placeholder="Seu nome" required /></div>}
               <div style={{ marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="seu@email.com" required /></div>
-              <div style={{ marginBottom: page === 'login' ? 8 : 22 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="********" required /></div>
-              {page === 'login' && <div style={{ textAlign: 'right', marginBottom: 16 }}><button type="button" onClick={() => setResetStep(1)} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: 12, cursor: 'pointer' }}>Esqueci minha senha</button></div>}
+              <div style={{ marginBottom: 22 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="********" required /></div>
               <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Aguarde...' : (page === 'register' ? 'Criar Conta' : 'Entrar')}</button>
               <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text-muted)' }}>{page === 'register' ? 'Já tem conta?' : 'Não tem conta?'} <span onClick={() => setPage(page === 'login' ? 'register' : 'login')} style={{ color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 500 }}>{page === 'register' ? 'Fazer login' : 'Criar conta'}</span></p>
-            </form>}
-            {resetStep === 1 && <form onSubmit={handleForgotPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-info-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="mail" size={24} style={{ color: 'var(--accent-info)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Recuperar senha</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Digite seu email para receber o código</p></div><div style={{ marginBottom: 20 }}><input className="input" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="seu@email.com" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Enviando...' : 'Enviar código'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => { setResetStep(0); setResetEmail(''); setError(''); }} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar ao login</span></p></form>}
-            {resetStep === 2 && <form onSubmit={handleResetPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-primary-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="shieldCheck" size={24} style={{ color: 'var(--accent-primary)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Verificar código</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Código enviado para {resetEmail}</p></div><div style={{ marginBottom: 14 }}><input className="input" type="text" value={resetCode} onChange={(e) => setResetCode(e.target.value.replace(/[^0-9]/g, '').slice(0,6))} placeholder="000000" maxLength={6} style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} required /></div><div style={{ marginBottom: 14 }}><input className="input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nova senha (mín 6 caracteres)" required /></div><div style={{ marginBottom: 20 }}><input className="input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmar nova senha" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Alterando...' : 'Alterar senha'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => setResetStep(1)} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar</span></p></form>}
+            </form>
           </div>
         </div>
       </>
@@ -641,6 +678,7 @@ export default function App() {
               <div className={`nav-item ${page === 'dashboard' ? 'active' : ''}`} onClick={() => setPage('dashboard')}><Icon name="layoutDashboard" size={18} />Dashboard</div>
               <div className={`nav-item ${page === 'campaigns' ? 'active' : ''}`} onClick={() => setPage('campaigns')}><Icon name="target" size={18} />Campanhas{filterCounts.critical > 0 && <span className="nav-badge">{filterCounts.critical}</span>}</div>
               <div className={`nav-item ${page === 'audience' ? 'active' : ''}`} onClick={() => setPage('audience')}><Icon name="users" size={18} />Público</div>
+              <div className={`nav-item ${page === 'creatives' ? 'active' : ''}`} onClick={() => setPage('creatives')}><Icon name="layers" size={18} />Criativos</div>
               <div className={`nav-item ${page === 'insights' ? 'active' : ''}`} onClick={() => setPage('insights')}><Icon name="sparkles" size={18} />Insights IA</div>
             </div>
             <div className="nav-group">
@@ -653,9 +691,9 @@ export default function App() {
 
         <main className="main-content">
           <header className="header">
-            <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : 'Visão geral'}</p></div></div>
+            <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : page === 'creatives' ? 'Criativos' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Performance dos anúncios' : page === 'audience' ? 'Entenda seu público' : 'Visão geral'}</p></div></div>
             <div className="header-right">
-              {connected && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.length > 0 ? accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>) : <option value="">Carregando contas...</option>}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
+              {connected && accounts.length > 0 && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
               <div className="select-wrap"><select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>{dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>
               <button className="btn btn-secondary" onClick={loadData} disabled={loading}><Icon name="refreshCw" size={15} className={loading ? 'animate-spin' : ''} />Atualizar</button>
             </div>
@@ -720,11 +758,128 @@ export default function App() {
                 <div className="settings-card"><h3 className="settings-card-title"><Icon name="link" size={18} />Conexão Meta</h3><div className="settings-row"><span className="settings-label">Status</span><span className={`connection-badge ${connected ? 'connected' : 'disconnected'}`}><span className="connection-dot"></span>{connected ? 'Conectado' : 'Desconectado'}</span></div>{connected && <div style={{marginTop:16}}><button className="btn btn-danger" onClick={handleDisconnect}><Icon name="x" size={16} />Desconectar</button></div>}</div>
                 <div className="settings-card"><h3 className="settings-card-title"><Icon name="sliders" size={18} />Metas</h3><div className="settings-row"><span className="settings-label">Meta CPA</span><span className="settings-value">{fmt.money(AIEngine.config.metaCPA)}</span></div><div className="settings-row"><span className="settings-label">Meta ROAS</span><span className="settings-value">{AIEngine.config.metaROAS}x</span></div><div className="settings-row"><span className="settings-label">CTR Mínimo</span><span className="settings-value">{AIEngine.config.ctrMinimo}%</span></div></div>
               </div>
-            ) : page === 'audience' && breakdown ? (
-              <div className="settings-grid">
-                <div className="settings-card"><h3 className="settings-card-title"><Icon name="users" size={18} />Por Gênero</h3>{breakdown.gender?.map((g,i) => <div className="settings-row" key={i}><span className="settings-label">{g.gender === 'male' ? 'Masculino' : 'Feminino'}</span><span className="settings-value">{g.conversions || 0} conv.</span></div>) || <p style={{color:'var(--text-muted)'}}>Sem dados</p>}</div>
-                <div className="settings-card"><h3 className="settings-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>{breakdown.age?.map((a,i) => <div className="settings-row" key={i}><span className="settings-label">{a.age}</span><span className="settings-value">{a.conversions || 0} conv.</span></div>) || <p style={{color:'var(--text-muted)'}}>Sem dados</p>}</div>
-              </div>
+            ) : page === 'audience' ? (
+              <>
+                <div className="stats-grid">
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="users" size={18} /></div></div><div className="stat-value">{audienceStats?.totalConv || 0}</div><div className="stat-label">Conversões Totais</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="checkCircle" size={18} /></div></div><div className="stat-value">{audienceStats?.bestGender?.gender === 'female' ? 'Feminino' : audienceStats?.bestGender?.gender === 'male' ? 'Masculino' : '-'}</div><div className="stat-label">Melhor Gênero</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="barChart3" size={18} /></div></div><div className="stat-value">{audienceStats?.bestAge?.age || '-'}</div><div className="stat-label">Melhor Idade</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="smartphone" size={18} /></div></div><div className="stat-value">{audienceStats?.bestDevice?.device || '-'}</div><div className="stat-label">Melhor Device</div></div>
+                </div>
+                <div className="settings-grid">
+                  <div className="audience-card">
+                    <h3 className="audience-card-title"><Icon name="users" size={18} />Por Gênero</h3>
+                    {audienceStats?.genderData?.length > 0 ? audienceStats.genderData.map((g, i) => {
+                      const maxConv = Math.max(...audienceStats.genderData.map(x => x.conversions || 0)) || 1;
+                      const pct = ((g.conversions || 0) / maxConv) * 100;
+                      return (
+                        <div key={i} className="audience-item">
+                          <span className="audience-label">{g.gender === 'male' ? '👨 Masculino' : '👩 Feminino'}</span>
+                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: g.gender === 'female' ? 'var(--accent-pink)' : 'var(--accent-info)' }}></div></div></div>
+                          <span className="audience-value">{g.conversions || 0} conv</span>
+                        </div>
+                      );
+                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de gênero</p>}
+                  </div>
+                  <div className="audience-card">
+                    <h3 className="audience-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>
+                    {audienceStats?.ageData?.length > 0 ? audienceStats.ageData.map((a, i) => {
+                      const maxConv = Math.max(...audienceStats.ageData.map(x => x.conversions || 0)) || 1;
+                      const pct = ((a.conversions || 0) / maxConv) * 100;
+                      return (
+                        <div key={i} className="audience-item">
+                          <span className="audience-label">{a.age}</span>
+                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: 'var(--accent-primary)' }}></div></div></div>
+                          <span className="audience-value">{a.conversions || 0} conv</span>
+                        </div>
+                      );
+                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de idade</p>}
+                  </div>
+                  <div className="audience-card">
+                    <h3 className="audience-card-title"><Icon name="smartphone" size={18} />Por Dispositivo</h3>
+                    {audienceStats?.deviceData?.length > 0 ? audienceStats.deviceData.map((d, i) => {
+                      const maxConv = Math.max(...audienceStats.deviceData.map(x => x.conversions || 0)) || 1;
+                      const pct = ((d.conversions || 0) / maxConv) * 100;
+                      return (
+                        <div key={i} className="audience-item">
+                          <span className="audience-label">{d.device === 'mobile' ? '📱 Mobile' : d.device === 'desktop' ? '🖥️ Desktop' : d.device}</span>
+                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: 'var(--accent-warning)' }}></div></div></div>
+                          <span className="audience-value">{d.conversions || 0} conv</span>
+                        </div>
+                      );
+                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de dispositivo</p>}
+                  </div>
+                  <div className="audience-card">
+                    <h3 className="audience-card-title"><Icon name="monitor" size={18} />Por Posicionamento</h3>
+                    {audienceStats?.placementData?.length > 0 ? audienceStats.placementData.slice(0, 5).map((p, i) => {
+                      const maxConv = Math.max(...audienceStats.placementData.map(x => x.conversions || 0)) || 1;
+                      const pct = ((p.conversions || 0) / maxConv) * 100;
+                      return (
+                        <div key={i} className="audience-item">
+                          <span className="audience-label">{p.placement || p.publisher_platform || 'N/A'}</span>
+                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: 'var(--accent-info)' }}></div></div></div>
+                          <span className="audience-value">{p.conversions || 0} conv</span>
+                        </div>
+                      );
+                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de posicionamento</p>}
+                  </div>
+                </div>
+              </>
+            ) : page === 'creatives' ? (
+              <>
+                <div className="stats-grid">
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="layers" size={18} /></div></div><div className="stat-value">{creativeStats.total}</div><div className="stat-label">Total de Anúncios</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="play" size={18} /></div></div><div className="stat-value">{creativeStats.active}</div><div className="stat-label">Ativos</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="activity" size={18} /></div></div><div className="stat-value">{fmt.pct(creativeStats.avgCtr)}</div><div className="stat-label">CTR Médio</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="trendingUp" size={18} /></div></div><div className="stat-value">{creativeStats.bestAd ? fmt.pct(creativeStats.bestAd.insights?.ctr || 0) : '-'}</div><div className="stat-label">Melhor CTR</div></div>
+                </div>
+                {creativeStats.bestAd && (
+                  <div className="ai-summary" style={{ marginBottom: 22 }}>
+                    <div className="ai-icon"><Icon name="sparkles" size={22} /></div>
+                    <div className="ai-content">
+                      <div className="ai-header"><span className="ai-title">Análise de Criativos</span><span className="ai-badge">IA</span></div>
+                      <p className="ai-text">
+                        Seu melhor anúncio é <strong className="success">"{(creativeStats.bestAd.name || '').substring(0, 30)}..."</strong> com CTR de {fmt.pct(creativeStats.bestAd.insights?.ctr || 0)}.
+                        {creativeStats.worstAd && <> O anúncio <strong className="danger">"{(creativeStats.worstAd.name || '').substring(0, 20)}..."</strong> precisa de atenção (CTR: {fmt.pct(creativeStats.worstAd.insights?.ctr || 0)}).</>}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Todos os Anúncios ({ads.length})</h3>
+                <div className="creative-grid">
+                  {ads.length === 0 ? (
+                    <div className="empty-state" style={{ gridColumn: '1/-1' }}><Icon name="layers" size={48} className="empty-icon" /><h3 className="empty-title">Nenhum anúncio</h3><p className="empty-text">Não encontramos anúncios nessa conta</p></div>
+                  ) : ads.map((ad, i) => {
+                    const ins = ad.insights || {};
+                    const isActive = ad.effectiveStatus === 'ACTIVE';
+                    const ctrScore = (ins.ctr || 0) >= 1.5 ? 'good' : (ins.ctr || 0) >= 0.8 ? 'warning' : 'bad';
+                    return (
+                      <div key={ad.id || i} className="creative-card">
+                        <div className="creative-thumb">
+                          {ad.thumbnail_url || ad.image_url ? (
+                            <img src={ad.thumbnail_url || ad.image_url} alt={ad.name} onError={(e) => { e.target.style.display = 'none'; }} />
+                          ) : (
+                            <Icon name={ad.creative?.object_type === 'VIDEO' ? 'video' : 'image'} size={40} style={{ color: 'var(--text-faint)' }} />
+                          )}
+                          <span className={`creative-status ${isActive ? 'active' : 'paused'}`}>{isActive ? 'Ativo' : 'Pausado'}</span>
+                          <div className="creative-indicator" style={{ background: ctrScore === 'good' ? 'var(--accent-primary)' : ctrScore === 'warning' ? 'var(--accent-warning)' : 'var(--accent-danger)', color: 'white' }}>
+                            {Math.round(ins.ctr || 0)}
+                          </div>
+                        </div>
+                        <div className="creative-info">
+                          <div className="creative-name" title={ad.name}>{ad.name || 'Sem nome'}</div>
+                          <div className="creative-metrics">
+                            <div className="creative-metric"><div className="creative-metric-label">Gasto</div><div className="creative-metric-value">{fmt.moneyCompact(ins.spend || 0)}</div></div>
+                            <div className="creative-metric"><div className="creative-metric-label">CTR</div><div className="creative-metric-value" style={{ color: ctrScore === 'good' ? 'var(--accent-primary)' : ctrScore === 'warning' ? 'var(--accent-warning)' : 'var(--accent-danger)' }}>{fmt.pct(ins.ctr || 0)}</div></div>
+                            <div className="creative-metric"><div className="creative-metric-label">Cliques</div><div className="creative-metric-value">{fmt.num(ins.clicks || 0)}</div></div>
+                            <div className="creative-metric"><div className="creative-metric-label">Conv.</div><div className="creative-metric-value">{ins.conversions || 0}</div></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             ) : page === 'insights' ? (
               <>
                 <div className="ai-summary"><div className="ai-icon"><Icon name="sparkles" size={22} /></div><div className="ai-content"><div className="ai-header"><span className="ai-title">Análise da Conta</span><span className="ai-badge">IA</span></div><p className="ai-text">Você tem <strong>{campaigns.length} campanhas</strong>. {summary.critical > 0 && <><strong className="danger">{summary.critical}</strong> precisam de atenção.</>} {summary.scalable > 0 && <><strong className="success">{summary.scalable}</strong> podem ser escaladas.</>}</p></div></div>
