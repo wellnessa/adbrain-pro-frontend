@@ -534,10 +534,32 @@ export default function App() {
   ];
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('adbrain_user');
-    const savedToken = localStorage.getItem('adbrain_meta_token');
-    const savedAccount = localStorage.getItem('adbrain_account');
-    if (savedUser) { setUser(JSON.parse(savedUser)); setPage('campaigns'); if (savedToken) { setToken(savedToken); setConnected(true); if (savedAccount) setSelectedAccount(savedAccount); } }
+    const init = async () => {
+      const savedUser = localStorage.getItem('adbrain_user');
+      const savedToken = localStorage.getItem('adbrain_meta_token');
+      const savedJwt = localStorage.getItem('adbrain_token');
+      if (savedUser) { 
+        setUser(JSON.parse(savedUser)); 
+        setPage('campaigns'); 
+        if (savedToken || savedJwt) { 
+          setToken(savedToken || ''); 
+          setConnected(true);
+          // Carregar contas ao iniciar
+          const res = await api.get('/api/meta/ad-accounts');
+          if (res.success && res.adAccounts?.length > 0) {
+            setAccounts(res.adAccounts);
+            const savedAccount = localStorage.getItem('adbrain_account');
+            if (savedAccount && res.adAccounts.find(a => a.id === savedAccount)) {
+              setSelectedAccount(savedAccount);
+            } else {
+              setSelectedAccount(res.adAccounts[0].id);
+              localStorage.setItem('adbrain_account', res.adAccounts[0].id);
+            }
+          }
+        } 
+      }
+    };
+    init();
   }, []);
 
   useEffect(() => { if (connected && selectedAccount) loadData(); }, [connected, selectedAccount, dateRange]);
