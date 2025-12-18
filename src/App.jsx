@@ -534,8 +534,28 @@ export default function App() {
   const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
   const filterCounts = useMemo(() => ({ all: campaigns.length, active: campaigns.filter(c => c.effectiveStatus === 'ACTIVE').length, paused: campaigns.filter(c => c.effectiveStatus === 'PAUSED').length, critical: campaigns.filter(c => c.score?.total < 40).length, scale: campaigns.filter(c => c.score?.total >= 75 && c.insights?.conversions > 0).length }), [campaigns]);
   const accountAnalysis = useMemo(() => AIEngine.getAccountAnalysis(campaigns, breakdown, ads), [campaigns, breakdown, ads]);
-spin" /> : 'Enviar código'}</button></>}
-                  {resetStep === 2 && <><div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Código</label><input className="input" value={resetCode} onChange={(e) => setResetCode(e.target.value)} placeholder="123456" required /></div><div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Nova senha</label><input className="input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required /></div><div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Confirmar</label><input className="input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required /></div><button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>{loading ? <Icon name="refreshCw" size={16} className="animate-spin" /> : 'Alterar senha'}</button></>}
+
+  // LOGIN/REGISTER/FORGOT PASSWORD FORMS
+  if (!user) {
+    return (
+      <>
+        <style>{styles}</style>
+        {error && <div className="toast"><div className="toast-content error"><Icon name="x" size={18} />{error}</div></div>}
+        {success && <div className="toast"><div className="toast-content success"><Icon name="check" size={18} />{success}</div></div>}
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', padding: 20 }}>
+          <div style={{ width: '100%', maxWidth: 400 }}>
+            <div style={{ textAlign: 'center', marginBottom: 32 }}>
+              <div className="logo-mark" style={{ width: 56, height: 56, margin: '0 auto 16px' }}><Icon name="brain" size={28} /></div>
+              <h1 style={{ fontSize: 24, fontWeight: 700 }}>AdBrain Pro</h1>
+              <p style={{ color: 'var(--text-muted)', marginTop: 8 }}>Otimização de anúncios com IA</p>
+            </div>
+            <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: 28 }}>
+              {page === 'forgot' ? (
+                <form onSubmit={(e) => { e.preventDefault(); if (resetStep === 0) { setResetStep(1); setSuccess('Código enviado para ' + resetEmail); } else if (resetStep === 1) { setResetStep(2); } else { setSuccess('Senha alterada!'); setPage('login'); setResetStep(0); } }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>Recuperar senha</h2>
+                  {resetStep === 0 && <><div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Email</label><input className="input" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="seu@email.com" required /></div><button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>{loading ? <Icon name="refreshCw" size={16} className="animate-spin" /> : 'Enviar código'}</button></>}
+                  {resetStep === 1 && <><div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Código recebido</label><input className="input" value={resetCode} onChange={(e) => setResetCode(e.target.value)} placeholder="123456" required /></div><button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>{loading ? <Icon name="refreshCw" size={16} className="animate-spin" /> : 'Verificar código'}</button></>}
+                  {resetStep === 2 && <><div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Nova senha</label><input className="input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required /></div><div style={{ marginBottom: 16 }}><label style={{ display: 'block', fontSize: 13, fontWeight: 500, marginBottom: 6 }}>Confirmar</label><input className="input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required /></div><button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>{loading ? <Icon name="refreshCw" size={16} className="animate-spin" /> : 'Alterar senha'}</button></>}
                   <p style={{ textAlign: 'center', marginTop: 16, fontSize: 13 }}><span style={{ color: 'var(--accent-primary)', cursor: 'pointer' }} onClick={() => { setPage('login'); setResetStep(0); }}>Voltar ao login</span></p>
                 </form>
               ) : (
