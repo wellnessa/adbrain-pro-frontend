@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 // =============================================================================
 // API CONFIG
@@ -218,6 +218,7 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .select-wrap { position: relative; }
 .select { appearance: none; background: var(--bg-muted); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 8px 34px 8px 12px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; font-family: var(--font-sans); cursor: pointer; min-width: 140px; }
 .select:focus { outline: none; border-color: var(--accent-primary); }
+.select:disabled { opacity: 0.6; cursor: not-allowed; }
 .select-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 14px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; font-family: var(--font-sans); cursor: pointer; transition: all 0.15s ease; border: none; }
@@ -474,7 +475,7 @@ function CampaignRow({ campaign, expanded, onToggle, onAction, activeTab, setAct
 }
 
 // =============================================================================
-// MAIN APP
+// MAIN APP - CORRIGIDO O SELETOR DE CONTAS
 // =============================================================================
 export default function App() {
   const [page, setPage] = useState('login');
@@ -486,6 +487,7 @@ export default function App() {
   const [token, setToken] = useState('');
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState('');
+  const [accountsLoading, setAccountsLoading] = useState(false); // NOVO: estado para loading das contas
   const [dateRange, setDateRange] = useState('last_30d');
   const [campaigns, setCampaigns] = useState([]);
   const [breakdown, setBreakdown] = useState(null);
@@ -509,76 +511,156 @@ export default function App() {
     { value: 'this_month', label: 'Este mês' }, { value: 'last_month', label: 'Mês passado' },
   ];
 
-  useEffect(() => {
-    const init = async () => {
-      const savedUser = localStorage.getItem('adbrain_user');
-      const savedToken = localStorage.getItem('adbrain_meta_token');
-      if (savedUser) { 
-        setUser(JSON.parse(savedUser)); 
-        setPage('campaigns'); 
-        if (savedToken) { 
-          setToken(savedToken); 
-          setConnected(true);
-          // Carregar contas ao iniciar
-          const res = await api.get('/api/meta/ad-accounts');
-          if (res.success && res.adAccounts?.length > 0) {
-            setAccounts(res.adAccounts);
-            const savedAccount = localStorage.getItem('adbrain_account');
-            if (savedAccount && res.adAccounts.find(a => a.id === savedAccount)) {
-              setSelectedAccount(savedAccount);
-            } else {
-              setSelectedAccount(res.adAccounts[0].id);
-              localStorage.setItem('adbrain_account', res.adAccounts[0].id);
-            }
-          }
-        } 
-      }
-    };
-    init();
-  }, []);
-
-  useEffect(() => { if (connected && selectedAccount) loadData(); }, [connected, selectedAccount, dateRange]);
-  useEffect(() => { 
-    if (connected && accounts.length === 0) {
-      const fetchAccounts = async () => {
-        const res = await api.get('/api/meta/ad-accounts');
-        if (res.success && res.adAccounts?.length > 0) {
-          setAccounts(res.adAccounts);
-          const savedAccount = localStorage.getItem('adbrain_account');
-          if (savedAccount && res.adAccounts.find(a => a.id === savedAccount)) {
-            setSelectedAccount(savedAccount);
-          } else {
-            setSelectedAccount(res.adAccounts[0].id);
-            localStorage.setItem('adbrain_account', res.adAccounts[0].id);
-          }
+  // CORRIGIDO: Função para carregar contas com useCallback
+  const loadAccounts = useCallback(async () => {
+    if (accountsLoading) return; // Evita chamadas duplicadas
+    
+    setAccountsLoading(true);
+    console.log('[AdBrain] Carregando contas do Meta Ads...');
+    
+    try {
+      const res = await api.get('/api/meta/ad-accounts');
+      console.log('[AdBrain] Resposta da API de contas:', res);
+      
+      if (res.success && res.adAccounts && res.adAccounts.length > 0) {
+        setAccounts(res.adAccounts);
+        
+        // Verificar se tem conta salva
+        const savedAccount = localStorage.getItem('adbrain_account');
+        const accountExists = res.adAccounts.find(a => a.id === savedAccount);
+        
+        if (savedAccount && accountExists) {
+          setSelectedAccount(savedAccount);
+          console.log('[AdBrain] Conta restaurada:', savedAccount);
+        } else {
+          // Usar a primeira conta disponível
+          const firstAccount = res.adAccounts[0].id;
+          setSelectedAccount(firstAccount);
+          localStorage.setItem('adbrain_account', firstAccount);
+          console.log('[AdBrain] Primeira conta selecionada:', firstAccount);
         }
-      };
-      fetchAccounts();
+      } else {
+        console.log('[AdBrain] Nenhuma conta encontrada ou erro:', res.error);
+        if (res.error) setError(res.error);
+      }
+    } catch (e) {
+      console.error('[AdBrain] Erro ao carregar contas:', e);
+      setError('Erro ao carregar contas de anúncios');
+    } finally {
+      setAccountsLoading(false);
     }
-  }, [connected]);
-  useEffect(() => { if (error || success) { const t = setTimeout(() => { setError(''); setSuccess(''); }, 4000); return () => clearTimeout(t); } }, [error, success]);
+  }, [accountsLoading]);
 
-  const loadData = async () => {
+  // CORRIGIDO: Função para carregar dados das campanhas
+  const loadData = useCallback(async () => {
+    if (!selectedAccount) {
+      console.log('[AdBrain] Nenhuma conta selecionada, pulando loadData');
+      return;
+    }
+    
     setLoading(true);
+    console.log('[AdBrain] Carregando dados para conta:', selectedAccount);
+    
     try {
       const [campRes, breakRes, adsRes] = await Promise.all([
         api.get(`/api/meta/campaigns/${selectedAccount}?date_preset=${dateRange}`), 
         api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`),
         api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`)
       ]);
-      if (campRes.success) setCampaigns((campRes.campaigns || []).map(c => ({ ...c, score: AIEngine.calcScore(c), analysis: AIEngine.analyze(c) })));
+      
+      if (campRes.success) {
+        setCampaigns((campRes.campaigns || []).map(c => ({ 
+          ...c, 
+          score: AIEngine.calcScore(c), 
+          analysis: AIEngine.analyze(c) 
+        })));
+      }
       if (breakRes.success) setBreakdown(breakRes.breakdown);
       if (adsRes.success) setAds(adsRes.ads || []);
-    } catch (e) { setError('Erro ao carregar dados'); }
-    setLoading(false);
-  };
+    } catch (e) { 
+      console.error('[AdBrain] Erro ao carregar dados:', e);
+      setError('Erro ao carregar dados'); 
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedAccount, dateRange]);
 
-  const loadAccounts = async () => { const res = await api.get('/api/meta/ad-accounts'); if (res.success && res.adAccounts?.length > 0) { setAccounts(res.adAccounts); const first = res.adAccounts[0].id; setSelectedAccount(first); localStorage.setItem('adbrain_account', first); } };
+  // CORRIGIDO: Inicialização - verifica usuário e token salvos
+  useEffect(() => {
+    const init = async () => {
+      const savedUser = localStorage.getItem('adbrain_user');
+      const savedToken = localStorage.getItem('adbrain_meta_token');
+      
+      console.log('[AdBrain] Inicializando app...', { savedUser: !!savedUser, savedToken: !!savedToken });
+      
+      if (savedUser) { 
+        setUser(JSON.parse(savedUser)); 
+        setPage('campaigns'); 
+        
+        if (savedToken) { 
+          setToken(savedToken); 
+          setConnected(true);
+        } 
+      }
+    };
+    init();
+  }, []);
+
+  // CORRIGIDO: Carrega contas quando conectado (useEffect separado e limpo)
+  useEffect(() => {
+    if (connected && accounts.length === 0 && !accountsLoading) {
+      console.log('[AdBrain] Conectado sem contas, carregando...');
+      loadAccounts();
+    }
+  }, [connected, accounts.length, accountsLoading, loadAccounts]);
+
+  // CORRIGIDO: Carrega dados quando conta é selecionada ou período muda
+  useEffect(() => {
+    if (connected && selectedAccount) {
+      console.log('[AdBrain] Conta/período mudou, carregando dados:', selectedAccount, dateRange);
+      loadData();
+    }
+  }, [connected, selectedAccount, dateRange, loadData]);
+
+  // Limpa mensagens de erro/sucesso
+  useEffect(() => { 
+    if (error || success) { 
+      const t = setTimeout(() => { 
+        setError(''); 
+        setSuccess(''); 
+      }, 4000); 
+      return () => clearTimeout(t); 
+    } 
+  }, [error, success]);
+
+  // NOVO: Handler para mudança de conta
+  const handleAccountChange = (e) => {
+    const newAccount = e.target.value;
+    console.log('[AdBrain] Mudando para conta:', newAccount);
+    setSelectedAccount(newAccount);
+    localStorage.setItem('adbrain_account', newAccount);
+  };
 
   const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao fazer login'); };
   const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
   const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setPage('login'); };
-  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
+  
+  // CORRIGIDO: handleConnect agora só seta connected, o useEffect cuida do resto
+  const handleConnect = async () => { 
+    if (!token.trim()) { setError('Cole o token'); return; } 
+    setLoading(true); 
+    const res = await api.post('/api/meta/connect', { accessToken: token }); 
+    setLoading(false); 
+    if (res.success) { 
+      localStorage.setItem('adbrain_meta_token', token); 
+      setConnected(true); 
+      setSuccess('Meta conectado!'); 
+      // As contas serão carregadas automaticamente pelo useEffect
+    } else {
+      setError(res.error || 'Token inválido'); 
+    }
+  };
+
   const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
   const handleForgotPassword = async (e) => { e.preventDefault(); if (!resetEmail) { setError('Digite seu email'); return; } setLoading(true); const res = await api.post('/api/auth/forgot-password', { email: resetEmail }); setLoading(false); if (res.success) { setSuccess('Código enviado para seu email!'); setResetStep(2); } else { setError(res.error || 'Erro ao enviar código'); } };
   const handleResetPassword = async (e) => { e.preventDefault(); if (!resetCode || resetCode.length !== 6) { setError('Digite o código de 6 dígitos'); return; } if (newPassword.length < 6) { setError('Senha deve ter no mínimo 6 caracteres'); return; } if (newPassword !== confirmPassword) { setError('Senhas não conferem'); return; } setLoading(true); const res = await api.post('/api/auth/reset-password', { email: resetEmail, code: resetCode, newPassword }); setLoading(false); if (res.success) { setSuccess('Senha alterada com sucesso!'); setResetStep(0); setResetEmail(''); setResetCode(''); setNewPassword(''); setConfirmPassword(''); } else { setError(res.error || 'Erro ao alterar senha'); } };
@@ -613,84 +695,7 @@ export default function App() {
 
   const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
   const filterCounts = useMemo(() => ({ all: campaigns.length, active: campaigns.filter(c => c.effectiveStatus === 'ACTIVE').length, paused: campaigns.filter(c => c.effectiveStatus === 'PAUSED').length, critical: campaigns.filter(c => c.score?.total < 40).length, scale: campaigns.filter(c => c.score?.total >= 75 && c.insights?.conversions > 0).length }), [campaigns]);
-
-  // LOGIN/REGISTER
-  if (page === 'login' || page === 'register') {
-    return (
-      <><style>{styles}</style>
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', padding: 20 }}>
-          <div className="animate-fade" style={{ width: '100%', maxWidth: 380, background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: '40px 32px' }}>
-            <div style={{ textAlign: 'center', marginBottom: 32 }}>
-              <div className="logo-mark" style={{ width: 60, height: 60, margin: '0 auto 16px', borderRadius: 14 }}><Icon name="brain" size={28} /></div>
-              <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>AdBrain Pro</h1>
-              <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Gestão inteligente de Facebook Ads</p>
-            </div>
-            {(error || success) && <div style={{ background: error ? 'var(--accent-danger-muted)' : 'var(--accent-primary-muted)', border: error ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(16,185,129,0.25)', color: error ? 'var(--accent-danger)' : 'var(--accent-primary)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 18, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name={error ? 'alertCircle' : 'checkCircle'} size={16} />{error || success}</div>}
-            {resetStep === 0 && <form onSubmit={page === 'register' ? handleRegister : handleLogin}>
-              {page === 'register' && <div style={{ marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome</label><input className="input" type="text" value={authName} onChange={(e) => setAuthName(e.target.value)} placeholder="Seu nome" required /></div>}
-              <div style={{ marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="seu@email.com" required /></div>
-              <div style={{ marginBottom: page === 'login' ? 8 : 22 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="********" required /></div>
-              {page === 'login' && <div style={{ textAlign: 'right', marginBottom: 16 }}><button type="button" onClick={() => setResetStep(1)} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: 12, cursor: 'pointer' }}>Esqueci minha senha</button></div>}
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Aguarde...' : (page === 'register' ? 'Criar Conta' : 'Entrar')}</button>
-              <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text-muted)' }}>{page === 'register' ? 'Já tem conta?' : 'Não tem conta?'} <span onClick={() => setPage(page === 'login' ? 'register' : 'login')} style={{ color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 500 }}>{page === 'register' ? 'Fazer login' : 'Criar conta'}</span></p>
-            </form>}
-            {resetStep === 1 && <form onSubmit={handleForgotPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-info-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="mail" size={24} style={{ color: 'var(--accent-info)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Recuperar senha</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Digite seu email para receber o código</p></div><div style={{ marginBottom: 20 }}><input className="input" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="seu@email.com" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Enviando...' : 'Enviar código'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => { setResetStep(0); setResetEmail(''); setError(''); }} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar ao login</span></p></form>}
-            {resetStep === 2 && <form onSubmit={handleResetPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-primary-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="shieldCheck" size={24} style={{ color: 'var(--accent-primary)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Verificar código</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Código enviado para {resetEmail}</p></div><div style={{ marginBottom: 14 }}><input className="input" type="text" value={resetCode} onChange={(e) => setResetCode(e.target.value.replace(/[^0-9]/g, '').slice(0,6))} placeholder="000000" maxLength={6} style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} required /></div><div style={{ marginBottom: 14 }}><input className="input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nova senha (mín 6 caracteres)" required /></div><div style={{ marginBottom: 20 }}><input className="input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmar nova senha" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Alterando...' : 'Alterar senha'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => setResetStep(1)} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar</span></p></form>}
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // MAIN APP
-  return (
-    <><style>{styles}</style>
-      <div className="app-layout">
-        <aside className="sidebar">
-          <div className="sidebar-header"><div className="sidebar-logo"><div className="logo-mark"><Icon name="brain" size={20} /></div><div><span className="logo-title">AdBrain</span><br/><span className="logo-subtitle">AI-Powered</span></div></div></div>
-          <nav className="sidebar-nav">
-            <div className="nav-group">
-              <div className="nav-group-label">Menu</div>
-              <div className={`nav-item ${page === 'dashboard' ? 'active' : ''}`} onClick={() => setPage('dashboard')}><Icon name="layoutDashboard" size={18} />Dashboard</div>
-              <div className={`nav-item ${page === 'campaigns' ? 'active' : ''}`} onClick={() => setPage('campaigns')}><Icon name="target" size={18} />Campanhas{filterCounts.critical > 0 && <span className="nav-badge">{filterCounts.critical}</span>}</div>
-              <div className={`nav-item ${page === 'audience' ? 'active' : ''}`} onClick={() => setPage('audience')}><Icon name="users" size={18} />Público</div>
-              <div className={`nav-item ${page === 'creatives' ? 'active' : ''}`} onClick={() => setPage('creatives')}><Icon name="layers" size={18} />Criativos</div>
-              <div className={`nav-item ${page === 'insights' ? 'active' : ''}`} onClick={() => setPage('insights')}><Icon name="sparkles" size={18} />Insights IA</div>
-            </div>
-            <div className="nav-group">
-              <div className="nav-group-label">Sistema</div>
-              <div className={`nav-item ${page === 'settings' ? 'active' : ''}`} onClick={() => setPage('settings')}><Icon name="settings" size={18} />Configurações</div>
-              <div className="nav-item" onClick={handleLogout}><Icon name="logOut" size={18} />Sair</div>
-            </div>
-          </nav>
-        </aside>
-
-        <main className="main-content">
-          <header className="header">
-            <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : page === 'creatives' ? 'Criativos' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Performance dos anúncios' : 'Visão geral'}</p></div></div>
-            <div className="header-right">
-              {connected && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.length > 0 ? accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>) : <option value="">Carregando contas...</option>}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
-              <div className="select-wrap"><select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>{dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>
-              <button className="btn btn-secondary" onClick={loadData} disabled={loading}><Icon name="refreshCw" size={15} className={loading ? 'animate-spin' : ''} />Atualizar</button>
-            </div>
-          </header>
-
-          {(error || success) && <div className="toast"><div className={`toast-content ${error ? 'error' : 'success'}`}><Icon name={error ? 'alertCircle' : 'checkCircle'} size={16} />{error || success}</div></div>}
-
-          <div className="page-content">
-            {!connected ? (
-              <div style={{ maxWidth: 440, margin: '50px auto', textAlign: 'center' }}>
-                <div style={{ width: 70, height: 70, background: 'var(--accent-info-muted)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}><Icon name="zap" size={36} style={{ color: 'var(--accent-info)' }} /></div>
-                <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 10 }}>Conecte sua conta Meta</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 28, fontSize: 14 }}>Para começar, conecte sua conta do Facebook Ads</p>
-                <div style={{ textAlign: 'left', marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Token de Acesso</label><input className="input" type="text" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Cole seu token aqui" /></div>
-                <button className="btn btn-primary" style={{ width: '100%', padding: 12 }} onClick={handleConnect} disabled={loading || !token.trim()}>{loading ? 'Conectando...' : 'Conectar'}</button>
-              </div>
-            ) : page === 'campaigns' ? (
-              <>
-                <div className="stats-grid">
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="dollarSign" size={18} /></div></div><div className="stat-value">{fmt.moneyCompact(stats.spend)}</div><div className="stat-label">Gasto Total</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="checkCircle" size={18} /></div></div><div className="stat-value">{stats.conversions}</div><div className="stat-label">Conversões</div></div>
+><div className="stat-label">Conversões</div></div>
                   <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="target" size={18} /></div></div><div className="stat-value">{stats.cpa > 0 ? fmt.money(stats.cpa) : '-'}</div><div className="stat-label">CPA Médio</div></div>
                   <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="activity" size={18} /></div></div><div className="stat-value">{fmt.pct(stats.ctr)}</div><div className="stat-label">CTR Médio</div></div>
                 </div>
@@ -736,218 +741,29 @@ export default function App() {
               </div>
             ) : page === 'audience' ? (
               <>
-                {/* Cards de resumo do público */}
                 <div className="stats-grid" style={{marginBottom:24}}>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon blue"><Icon name="users" size={18} /></div></div>
-                    <div className="stat-value">{fmt.num(breakdown?.gender?.reduce((s,g) => s + (g.impressions || 0), 0) || 0)}</div>
-                    <div className="stat-label">Alcance Total</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon green"><Icon name="checkCircle" size={18} /></div></div>
-                    <div className="stat-value">{breakdown?.gender?.reduce((s,g) => s + (g.conversions || 0), 0) || 0}</div>
-                    <div className="stat-label">Conversões</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon yellow"><Icon name="pieChart" size={18} /></div></div>
-                    <div className="stat-value">{breakdown?.gender?.length > 0 ? (breakdown.gender.find(g => g.gender === 'female')?.conversions > breakdown.gender.find(g => g.gender === 'male')?.conversions ? 'Feminino' : 'Masculino') : '-'}</div>
-                    <div className="stat-label">Melhor Gênero</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon red"><Icon name="target" size={18} /></div></div>
-                    <div className="stat-value">{breakdown?.age?.length > 0 ? breakdown.age.sort((a,b) => (b.conversions||0) - (a.conversions||0))[0]?.age || '-' : '-'}</div>
-                    <div className="stat-label">Melhor Idade</div>
-                  </div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="users" size={18} /></div></div><div className="stat-value">{fmt.num(breakdown?.gender?.reduce((s,g) => s + (g.impressions || 0), 0) || 0)}</div><div className="stat-label">Alcance Total</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="checkCircle" size={18} /></div></div><div className="stat-value">{breakdown?.gender?.reduce((s,g) => s + (g.conversions || 0), 0) || 0}</div><div className="stat-label">Conversões</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="pieChart" size={18} /></div></div><div className="stat-value">{breakdown?.gender?.length > 0 ? (breakdown.gender.find(g => g.gender === 'female')?.conversions > breakdown.gender.find(g => g.gender === 'male')?.conversions ? 'Feminino' : 'Masculino') : '-'}</div><div className="stat-label">Melhor Gênero</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="target" size={18} /></div></div><div className="stat-value">{breakdown?.age?.length > 0 ? breakdown.age.sort((a,b) => (b.conversions||0) - (a.conversions||0))[0]?.age || '-' : '-'}</div><div className="stat-label">Melhor Idade</div></div>
                 </div>
-
                 <div className="settings-grid">
-                  {/* Gênero */}
-                  <div className="settings-card">
-                    <h3 className="settings-card-title"><Icon name="users" size={18} />Por Gênero</h3>
-                    {breakdown?.gender?.length > 0 ? breakdown.gender.map((g, i) => {
-                      const total = breakdown.gender.reduce((s, x) => s + (x.conversions || 0), 0);
-                      const pct = total > 0 ? ((g.conversions || 0) / total * 100) : 0;
-                      return (
-                        <div key={i} style={{marginBottom:16}}>
-                          <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
-                            <span style={{fontSize:13,fontWeight:500}}>{g.gender === 'male' ? '👨 Masculino' : '👩 Feminino'}</span>
-                            <span style={{fontSize:13,fontWeight:600,color:'var(--accent-primary)'}}>{g.conversions || 0} conv.</span>
-                          </div>
-                          <div style={{background:'var(--bg-elevated)',borderRadius:4,height:8,overflow:'hidden'}}>
-                            <div style={{background: g.gender === 'male' ? 'var(--accent-info)' : '#ec4899',height:'100%',width:`${pct}%`,borderRadius:4,transition:'width 0.5s'}}></div>
-                          </div>
-                          <div style={{display:'flex',justifyContent:'space-between',marginTop:4,fontSize:11,color:'var(--text-muted)'}}>
-                            <span>{fmt.money(g.spend || 0)} gasto</span>
-                            <span>{fmt.num(g.clicks || 0)} cliques</span>
-                          </div>
-                        </div>
-                      );
-                    }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de gênero</p>}
-                  </div>
-
-                  {/* Idade */}
-                  <div className="settings-card">
-                    <h3 className="settings-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>
-                    {breakdown?.age?.length > 0 ? breakdown.age.sort((a,b) => (b.conversions||0) - (a.conversions||0)).slice(0,6).map((a, i) => {
-                      const maxConv = Math.max(...breakdown.age.map(x => x.conversions || 0));
-                      const pct = maxConv > 0 ? ((a.conversions || 0) / maxConv * 100) : 0;
-                      return (
-                        <div key={i} style={{marginBottom:12}}>
-                          <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
-                            <span style={{fontSize:13,fontWeight:500}}>{a.age}</span>
-                            <span style={{fontSize:13,fontWeight:600,color: i === 0 ? 'var(--accent-primary)' : 'var(--text-secondary)'}}>{a.conversions || 0} conv.</span>
-                          </div>
-                          <div style={{background:'var(--bg-elevated)',borderRadius:4,height:6,overflow:'hidden'}}>
-                            <div style={{background: i === 0 ? 'var(--accent-primary)' : 'var(--border-muted)',height:'100%',width:`${pct}%`,borderRadius:4}}></div>
-                          </div>
-                        </div>
-                      );
-                    }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de idade</p>}
-                  </div>
-
-                  {/* Dispositivos */}
-                  <div className="settings-card">
-                    <h3 className="settings-card-title"><Icon name="monitor" size={18} />Por Dispositivo</h3>
-                    {breakdown?.devices?.length > 0 ? breakdown.devices.slice(0,4).map((d, i) => (
-                      <div className="settings-row" key={i}>
-                        <span className="settings-label" style={{display:'flex',alignItems:'center',gap:8}}>
-                          <Icon name={d.device === 'mobile' ? 'smartphone' : 'monitor'} size={14} />
-                          {d.device === 'mobile' ? 'Mobile' : d.device === 'desktop' ? 'Desktop' : d.device}
-                        </span>
-                        <span className="settings-value">{fmt.money(d.spend || 0)}</span>
-                      </div>
-                    )) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados</p>}
-                  </div>
-
-                  {/* Posicionamentos */}
-                  <div className="settings-card">
-                    <h3 className="settings-card-title"><Icon name="layers" size={18} />Por Posicionamento</h3>
-                    {breakdown?.placements?.length > 0 ? breakdown.placements.slice(0,4).map((p, i) => (
-                      <div className="settings-row" key={i}>
-                        <span className="settings-label">{p.platform === 'facebook' ? '📘 Facebook' : p.platform === 'instagram' ? '📸 Instagram' : p.platform === 'audience_network' ? '🌐 Audience' : p.platform} - {p.position}</span>
-                        <span className="settings-value">{fmt.money(p.spend || 0)}</span>
-                      </div>
-                    )) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados</p>}
-                  </div>
+                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="users" size={18} />Por Gênero</h3>{breakdown?.gender?.length > 0 ? breakdown.gender.map((g, i) => { const total = breakdown.gender.reduce((s, x) => s + (x.conversions || 0), 0); const pct = total > 0 ? ((g.conversions || 0) / total * 100) : 0; return (<div key={i} style={{marginBottom:16}}><div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}><span style={{fontSize:13,fontWeight:500}}>{g.gender === 'male' ? '👨 Masculino' : '👩 Feminino'}</span><span style={{fontSize:13,fontWeight:600,color:'var(--accent-primary)'}}>{g.conversions || 0} conv.</span></div><div style={{background:'var(--bg-elevated)',borderRadius:4,height:8,overflow:'hidden'}}><div style={{background: g.gender === 'male' ? 'var(--accent-info)' : '#ec4899',height:'100%',width:`${pct}%`,borderRadius:4,transition:'width 0.5s'}}></div></div><div style={{display:'flex',justifyContent:'space-between',marginTop:4,fontSize:11,color:'var(--text-muted)'}}><span>{fmt.money(g.spend || 0)} gasto</span><span>{fmt.num(g.clicks || 0)} cliques</span></div></div>); }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de gênero</p>}</div>
+                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>{breakdown?.age?.length > 0 ? breakdown.age.sort((a,b) => (b.conversions||0) - (a.conversions||0)).slice(0,6).map((a, i) => { const maxConv = Math.max(...breakdown.age.map(x => x.conversions || 0)); const pct = maxConv > 0 ? ((a.conversions || 0) / maxConv * 100) : 0; return (<div key={i} style={{marginBottom:12}}><div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}><span style={{fontSize:13,fontWeight:500}}>{a.age}</span><span style={{fontSize:13,fontWeight:600,color: i === 0 ? 'var(--accent-primary)' : 'var(--text-secondary)'}}>{a.conversions || 0} conv.</span></div><div style={{background:'var(--bg-elevated)',borderRadius:4,height:6,overflow:'hidden'}}><div style={{background: i === 0 ? 'var(--accent-primary)' : 'var(--border-muted)',height:'100%',width:`${pct}%`,borderRadius:4}}></div></div></div>); }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de idade</p>}</div>
+                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="monitor" size={18} />Por Dispositivo</h3>{breakdown?.devices?.length > 0 ? breakdown.devices.slice(0,4).map((d, i) => (<div className="settings-row" key={i}><span className="settings-label" style={{display:'flex',alignItems:'center',gap:8}}><Icon name={d.device === 'mobile' ? 'smartphone' : 'monitor'} size={14} />{d.device === 'mobile' ? 'Mobile' : d.device === 'desktop' ? 'Desktop' : d.device}</span><span className="settings-value">{fmt.money(d.spend || 0)}</span></div>)) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados</p>}</div>
+                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="layers" size={18} />Por Posicionamento</h3>{breakdown?.placements?.length > 0 ? breakdown.placements.slice(0,4).map((p, i) => (<div className="settings-row" key={i}><span className="settings-label">{p.platform === 'facebook' ? '📘 Facebook' : p.platform === 'instagram' ? '📸 Instagram' : p.platform === 'audience_network' ? '🌐 Audience' : p.platform} - {p.position}</span><span className="settings-value">{fmt.money(p.spend || 0)}</span></div>)) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados</p>}</div>
                 </div>
               </>
             ) : page === 'creatives' ? (
               <>
-                {/* Cards de resumo dos criativos */}
                 <div className="stats-grid" style={{marginBottom:24}}>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon blue"><Icon name="layers" size={18} /></div></div>
-                    <div className="stat-value">{ads.length}</div>
-                    <div className="stat-label">Total de Anúncios</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon green"><Icon name="play" size={18} /></div></div>
-                    <div className="stat-value">{ads.filter(a => a.effectiveStatus === 'ACTIVE').length}</div>
-                    <div className="stat-label">Ativos</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon yellow"><Icon name="thumbsUp" size={18} /></div></div>
-                    <div className="stat-value">{ads.filter(a => a.insights?.ctr > 1).length}</div>
-                    <div className="stat-label">CTR {'>'} 1%</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-header"><div className="stat-icon red"><Icon name="thumbsDown" size={18} /></div></div>
-                    <div className="stat-value">{ads.filter(a => a.insights?.spend > 50 && a.insights?.conversions === 0).length}</div>
-                    <div className="stat-label">Sem Conversão</div>
-                  </div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="layers" size={18} /></div></div><div className="stat-value">{ads.length}</div><div className="stat-label">Total de Anúncios</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="play" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.effectiveStatus === 'ACTIVE').length}</div><div className="stat-label">Ativos</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="thumbsUp" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.insights?.ctr > 1).length}</div><div className="stat-label">CTR {'>'} 1%</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="thumbsDown" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.insights?.spend > 50 && a.insights?.conversions === 0).length}</div><div className="stat-label">Sem Conversão</div></div>
                 </div>
-
-                {/* Grid de criativos */}
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:16}}>
-                  {ads.length > 0 ? ads.map(ad => {
-                    const isGood = ad.insights?.conversions > 0 || ad.insights?.ctr > 1;
-                    const isBad = ad.insights?.spend > 50 && ad.insights?.conversions === 0;
-                    return (
-                      <div key={ad.id} style={{
-                        background:'var(--bg-subtle)',
-                        border:`1px solid ${isBad ? 'rgba(239,68,68,0.3)' : isGood ? 'rgba(16,185,129,0.3)' : 'var(--border-subtle)'}`,
-                        borderRadius:'var(--radius-lg)',
-                        overflow:'hidden',
-                        transition:'all 0.2s'
-                      }}>
-                        {/* Thumbnail */}
-                        <div style={{
-                          height:160,
-                          background:'var(--bg-muted)',
-                          display:'flex',
-                          alignItems:'center',
-                          justifyContent:'center',
-                          position:'relative',
-                          overflow:'hidden'
-                        }}>
-                          {ad.creative?.thumbnail ? (
-                            <img src={ad.creative.thumbnail} alt={ad.name} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-                          ) : (
-                            <Icon name="image" size={40} style={{color:'var(--text-faint)'}} />
-                          )}
-                          {/* Status badge */}
-                          <div style={{
-                            position:'absolute',
-                            top:8,
-                            right:8,
-                            padding:'4px 8px',
-                            borderRadius:6,
-                            fontSize:10,
-                            fontWeight:600,
-                            background: ad.effectiveStatus === 'ACTIVE' ? 'var(--accent-primary)' : 'var(--bg-elevated)',
-                            color: ad.effectiveStatus === 'ACTIVE' ? 'white' : 'var(--text-muted)'
-                          }}>
-                            {ad.effectiveStatus === 'ACTIVE' ? 'ATIVO' : 'PAUSADO'}
-                          </div>
-                          {/* Performance indicator */}
-                          {(isGood || isBad) && (
-                            <div style={{
-                              position:'absolute',
-                              top:8,
-                              left:8,
-                              width:28,
-                              height:28,
-                              borderRadius:14,
-                              background: isGood ? 'var(--accent-primary)' : 'var(--accent-danger)',
-                              display:'flex',
-                              alignItems:'center',
-                              justifyContent:'center'
-                            }}>
-                              <Icon name={isGood ? 'trendingUp' : 'trendingDown'} size={14} style={{color:'white'}} />
-                            </div>
-                          )}
-                        </div>
-                        {/* Info */}
-                        <div style={{padding:14}}>
-                          <h4 style={{fontSize:13,fontWeight:600,marginBottom:8,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ad.name}</h4>
-                          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-                            <div>
-                              <div style={{fontSize:11,color:'var(--text-muted)'}}>Gasto</div>
-                              <div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{fmt.money(ad.insights?.spend || 0)}</div>
-                            </div>
-                            <div>
-                              <div style={{fontSize:11,color:'var(--text-muted)'}}>CTR</div>
-                              <div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: ad.insights?.ctr > 1 ? 'var(--accent-primary)' : ad.insights?.ctr < 0.5 ? 'var(--accent-danger)' : 'inherit'}}>{fmt.pct(ad.insights?.ctr || 0)}</div>
-                            </div>
-                            <div>
-                              <div style={{fontSize:11,color:'var(--text-muted)'}}>Conversões</div>
-                              <div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: ad.insights?.conversions > 0 ? 'var(--accent-primary)' : 'inherit'}}>{ad.insights?.conversions || 0}</div>
-                            </div>
-                            <div>
-                              <div style={{fontSize:11,color:'var(--text-muted)'}}>CPA</div>
-                              <div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{ad.insights?.cpa > 0 ? fmt.money(ad.insights.cpa) : '-'}</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }) : (
-                    <div style={{gridColumn:'1/-1',textAlign:'center',padding:50}}>
-                      <Icon name="layers" size={48} style={{color:'var(--text-faint)',marginBottom:16}} />
-                      <h3 style={{fontSize:16,fontWeight:600,marginBottom:6}}>Nenhum anúncio encontrado</h3>
-                      <p style={{fontSize:13,color:'var(--text-muted)'}}>Os anúncios aparecerão aqui quando disponíveis</p>
-                    </div>
-                  )}
+                  {ads.length > 0 ? ads.map(ad => { const isGood = ad.insights?.conversions > 0 || ad.insights?.ctr > 1; const isBad = ad.insights?.spend > 50 && ad.insights?.conversions === 0; return (<div key={ad.id} style={{background:'var(--bg-subtle)',border:`1px solid ${isBad ? 'rgba(239,68,68,0.3)' : isGood ? 'rgba(16,185,129,0.3)' : 'var(--border-subtle)'}`,borderRadius:'var(--radius-lg)',overflow:'hidden',transition:'all 0.2s'}}><div style={{height:160,background:'var(--bg-muted)',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>{ad.creative?.thumbnail ? (<img src={ad.creative.thumbnail} alt={ad.name} style={{width:'100%',height:'100%',objectFit:'cover'}} />) : (<Icon name="image" size={40} style={{color:'var(--text-faint)'}} />)}<div style={{position:'absolute',top:8,right:8,padding:'4px 8px',borderRadius:6,fontSize:10,fontWeight:600,background: ad.effectiveStatus === 'ACTIVE' ? 'var(--accent-primary)' : 'var(--bg-elevated)',color: ad.effectiveStatus === 'ACTIVE' ? 'white' : 'var(--text-muted)'}}>{ad.effectiveStatus === 'ACTIVE' ? 'ATIVO' : 'PAUSADO'}</div>{(isGood || isBad) && (<div style={{position:'absolute',top:8,left:8,width:28,height:28,borderRadius:14,background: isGood ? 'var(--accent-primary)' : 'var(--accent-danger)',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name={isGood ? 'trendingUp' : 'trendingDown'} size={14} style={{color:'white'}} /></div>)}</div><div style={{padding:14}}><h4 style={{fontSize:13,fontWeight:600,marginBottom:8,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ad.name}</h4><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}><div><div style={{fontSize:11,color:'var(--text-muted)'}}>Gasto</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{fmt.money(ad.insights?.spend || 0)}</div></div><div><div style={{fontSize:11,color:'var(--text-muted)'}}>CTR</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: ad.insights?.ctr > 1 ? 'var(--accent-primary)' : ad.insights?.ctr < 0.5 ? 'var(--accent-danger)' : 'inherit'}}>{fmt.pct(ad.insights?.ctr || 0)}</div></div><div><div style={{fontSize:11,color:'var(--text-muted)'}}>Conversões</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: ad.insights?.conversions > 0 ? 'var(--accent-primary)' : 'inherit'}}>{ad.insights?.conversions || 0}</div></div><div><div style={{fontSize:11,color:'var(--text-muted)'}}>CPA</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{ad.insights?.cpa > 0 ? fmt.money(ad.insights.cpa) : '-'}</div></div></div></div></div>); }) : (<div style={{gridColumn:'1/-1',textAlign:'center',padding:50}}><Icon name="layers" size={48} style={{color:'var(--text-faint)',marginBottom:16}} /><h3 style={{fontSize:16,fontWeight:600,marginBottom:6}}>Nenhum anúncio encontrado</h3><p style={{fontSize:13,color:'var(--text-muted)'}}>Os anúncios aparecerão aqui quando disponíveis</p></div>)}
                 </div>
               </>
             ) : page === 'insights' ? (
