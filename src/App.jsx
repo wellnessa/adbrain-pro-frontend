@@ -369,7 +369,28 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
 .empty-text { font-size: 13px; color: var(--text-muted); }
 
-@media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 50px 1fr 85px 85px 100px; } }
+.audience-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.audience-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; }
+.audience-card-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
+.audience-bar { margin-bottom: 16px; }
+.audience-bar:last-child { margin-bottom: 0; }
+.audience-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.audience-bar-label { font-size: 13px; font-weight: 500; }
+.audience-bar-value { font-size: 13px; font-weight: 600; font-family: var(--font-mono); }
+.audience-bar-track { height: 8px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; }
+.audience-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.audience-bar-stats { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: var(--text-muted); }
+.audience-segment { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg-muted); border-radius: var(--radius-md); margin-bottom: 8px; border-left: 3px solid var(--border-muted); }
+.audience-segment.top { border-left-color: var(--accent-primary); }
+.audience-segment.bad { border-left-color: var(--accent-danger); }
+.audience-segment-info { display: flex; flex-direction: column; gap: 2px; }
+.audience-segment-label { font-size: 13px; font-weight: 600; }
+.audience-segment-meta { font-size: 11px; color: var(--text-muted); }
+.audience-segment-value { text-align: right; }
+.audience-segment-cpa { font-size: 14px; font-weight: 700; font-family: var(--font-mono); }
+.audience-segment-conv { font-size: 11px; color: var(--text-muted); }
+
+@media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 50px 1fr 85px 85px 100px; } .audience-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1200px) { .settings-grid { grid-template-columns: 1fr; } .score-breakdown { grid-template-columns: repeat(2, 1fr); } }
 `;
 
@@ -756,20 +777,173 @@ export default function App() {
                 <div className="settings-card"><h3 className="settings-card-title"><Icon name="sliders" size={18} />Metas</h3><div className="settings-row"><span className="settings-label">Meta CPA</span><span className="settings-value">{fmt.money(AIEngine.config.metaCPA)}</span></div><div className="settings-row"><span className="settings-label">Meta ROAS</span><span className="settings-value">{AIEngine.config.metaROAS}x</span></div><div className="settings-row"><span className="settings-label">CTR Mínimo</span><span className="settings-value">{AIEngine.config.ctrMinimo}%</span></div></div>
               </div>
             ) : page === 'audience' ? (
-              <>
+              <div className="animate-fade">
+                {/* Stats da Audiência */}
                 <div className="stats-grid" style={{marginBottom:24}}>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="users" size={18} /></div></div><div className="stat-value">{fmt.num(breakdown?.gender?.reduce((s,g) => s + (g.impressions || 0), 0) || 0)}</div><div className="stat-label">Alcance Total</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="checkCircle" size={18} /></div></div><div className="stat-value">{breakdown?.gender?.reduce((s,g) => s + (g.conversions || 0), 0) || 0}</div><div className="stat-label">Conversões</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="pieChart" size={18} /></div></div><div className="stat-value">{breakdown?.gender?.length > 0 ? (breakdown.gender.find(g => g.gender === 'female')?.conversions > breakdown.gender.find(g => g.gender === 'male')?.conversions ? 'Feminino' : 'Masculino') : '-'}</div><div className="stat-label">Melhor Gênero</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="target" size={18} /></div></div><div className="stat-value">{breakdown?.age?.length > 0 ? breakdown.age.sort((a,b) => (b.conversions||0) - (a.conversions||0))[0]?.age || '-' : '-'}</div><div className="stat-label">Melhor Idade</div></div>
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon blue"><Icon name="users" size={18} /></div></div>
+                    <div className="stat-value">{fmt.num(breakdown?.gender?.reduce((s,g) => s + (g.spend || 0), 0) || 0)}</div>
+                    <div className="stat-label">Investido em Audiência</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon green"><Icon name="checkCircle" size={18} /></div></div>
+                    <div className="stat-value">{breakdown?.gender?.reduce((s,g) => s + (g.conversions || 0), 0) || 0}</div>
+                    <div className="stat-label">Conversões Totais</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon yellow"><Icon name="pieChart" size={18} /></div></div>
+                    <div className="stat-value">{breakdown?.gender?.length > 0 ? (breakdown.gender.find(g => g.gender === 'female')?.conversions > breakdown.gender.find(g => g.gender === 'male')?.conversions ? 'Feminino' : 'Masculino') : '-'}</div>
+                    <div className="stat-label">Melhor Gênero</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-header"><div className="stat-icon red"><Icon name="target" size={18} /></div></div>
+                    <div className="stat-value">{breakdown?.age?.length > 0 ? [...breakdown.age].sort((a,b) => (b.conversions||0) - (a.conversions||0))[0]?.age || '-' : '-'}</div>
+                    <div className="stat-label">Melhor Faixa Etária</div>
+                  </div>
                 </div>
-                <div className="settings-grid">
-                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="users" size={18} />Por Gênero</h3>{breakdown?.gender?.length > 0 ? breakdown.gender.map((g, i) => { const total = breakdown.gender.reduce((s, x) => s + (x.conversions || 0), 0); const pct = total > 0 ? ((g.conversions || 0) / total * 100) : 0; return (<div key={i} style={{marginBottom:16}}><div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}><span style={{fontSize:13,fontWeight:500}}>{g.gender === 'male' ? '👨 Masculino' : '👩 Feminino'}</span><span style={{fontSize:13,fontWeight:600,color:'var(--accent-primary)'}}>{g.conversions || 0} conv.</span></div><div style={{background:'var(--bg-elevated)',borderRadius:4,height:8,overflow:'hidden'}}><div style={{background: g.gender === 'male' ? 'var(--accent-info)' : '#ec4899',height:'100%',width:`${pct}%`,borderRadius:4,transition:'width 0.5s'}}></div></div><div style={{display:'flex',justifyContent:'space-between',marginTop:4,fontSize:11,color:'var(--text-muted)'}}><span>{fmt.money(g.spend || 0)} gasto</span><span>{fmt.num(g.clicks || 0)} cliques</span></div></div>); }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de gênero</p>}</div>
-                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>{breakdown?.age?.length > 0 ? breakdown.age.sort((a,b) => (b.conversions||0) - (a.conversions||0)).slice(0,6).map((a, i) => { const maxConv = Math.max(...breakdown.age.map(x => x.conversions || 0)); const pct = maxConv > 0 ? ((a.conversions || 0) / maxConv * 100) : 0; return (<div key={i} style={{marginBottom:12}}><div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}><span style={{fontSize:13,fontWeight:500}}>{a.age}</span><span style={{fontSize:13,fontWeight:600,color: i === 0 ? 'var(--accent-primary)' : 'var(--text-secondary)'}}>{a.conversions || 0} conv.</span></div><div style={{background:'var(--bg-elevated)',borderRadius:4,height:6,overflow:'hidden'}}><div style={{background: i === 0 ? 'var(--accent-primary)' : 'var(--border-muted)',height:'100%',width:`${pct}%`,borderRadius:4}}></div></div></div>); }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de idade</p>}</div>
-                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="monitor" size={18} />Por Dispositivo</h3>{breakdown?.devices?.length > 0 ? breakdown.devices.slice(0,4).map((d, i) => (<div className="settings-row" key={i}><span className="settings-label" style={{display:'flex',alignItems:'center',gap:8}}><Icon name={d.device === 'mobile' ? 'smartphone' : 'monitor'} size={14} />{d.device === 'mobile' ? 'Mobile' : d.device === 'desktop' ? 'Desktop' : d.device}</span><span className="settings-value">{fmt.money(d.spend || 0)}</span></div>)) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados</p>}</div>
-                  <div className="settings-card"><h3 className="settings-card-title"><Icon name="layers" size={18} />Por Posicionamento</h3>{breakdown?.placements?.length > 0 ? breakdown.placements.slice(0,4).map((p, i) => (<div className="settings-row" key={i}><span className="settings-label">{p.platform === 'facebook' ? '📘 Facebook' : p.platform === 'instagram' ? '📸 Instagram' : p.platform === 'audience_network' ? '🌐 Audience' : p.platform} - {p.position}</span><span className="settings-value">{fmt.money(p.spend || 0)}</span></div>)) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados</p>}</div>
-                </div>
-              </>
+
+                {(!breakdown || (!breakdown.age?.length && !breakdown.gender?.length)) ? (
+                  <div className="empty-state">
+                    <Icon name="users" size={56} className="empty-icon" />
+                    <h3 className="empty-title">Sem dados de audiência</h3>
+                    <p className="empty-text">Os dados de audiência aparecerão aqui quando houver campanhas ativas com impressões.</p>
+                  </div>
+                ) : (
+                  <div className="audience-grid">
+                    {/* Por Idade */}
+                    <div className="audience-card">
+                      <div className="audience-card-title"><Icon name="users" size={18} />Distribuição por Idade</div>
+                      {(breakdown.age || []).length > 0 ? (breakdown.age || []).map((item, i) => {
+                        const maxSpend = Math.max(...(breakdown.age || []).map(a => a.spend || 0));
+                        const pct = maxSpend > 0 ? ((item.spend || 0) / maxSpend * 100) : 0;
+                        const colors = ['#10b981', '#22c55e', '#84cc16', '#eab308', '#f59e0b', '#ef4444'];
+                        const isTop = i === 0 && item.conversions > 0;
+                        return (
+                          <div className="audience-bar" key={i}>
+                            <div className="audience-bar-header">
+                              <span className="audience-bar-label">{isTop && '🏆 '}{item.age}</span>
+                              <span className="audience-bar-value" style={{color: isTop ? 'var(--accent-primary)' : 'inherit'}}>{fmt.money(item.spend || 0)}</span>
+                            </div>
+                            <div className="audience-bar-track">
+                              <div className="audience-bar-fill" style={{ width: `${pct}%`, background: colors[i % colors.length] }}></div>
+                            </div>
+                            <div className="audience-bar-stats">
+                              <span>CPA: {item.cpa ? fmt.money(item.cpa) : '-'}</span>
+                              <span>{item.conversions || 0} conversões</span>
+                            </div>
+                          </div>
+                        );
+                      }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de idade</p>}
+                    </div>
+
+                    {/* Por Gênero */}
+                    <div className="audience-card">
+                      <div className="audience-card-title"><Icon name="pieChart" size={18} />Distribuição por Gênero</div>
+                      {(breakdown.gender || []).length > 0 ? (breakdown.gender || []).map((item, i) => {
+                        const totalSpend = (breakdown.gender || []).reduce((s, g) => s + (g.spend || 0), 0);
+                        const pct = totalSpend > 0 ? ((item.spend || 0) / totalSpend * 100) : 0;
+                        const color = item.gender === 'male' ? '#3b82f6' : item.gender === 'female' ? '#ec4899' : '#8b5cf6';
+                        const emoji = item.gender === 'male' ? '👨' : item.gender === 'female' ? '👩' : '👤';
+                        const label = item.gender === 'male' ? 'Masculino' : item.gender === 'female' ? 'Feminino' : item.label || item.gender;
+                        return (
+                          <div className="audience-bar" key={i}>
+                            <div className="audience-bar-header">
+                              <span className="audience-bar-label">{emoji} {label}</span>
+                              <span className="audience-bar-value">{pct.toFixed(1)}%</span>
+                            </div>
+                            <div className="audience-bar-track">
+                              <div className="audience-bar-fill" style={{ width: `${pct}%`, background: color }}></div>
+                            </div>
+                            <div className="audience-bar-stats">
+                              <span>Gasto: {fmt.money(item.spend || 0)}</span>
+                              <span>CPA: {item.cpa ? fmt.money(item.cpa) : '-'}</span>
+                            </div>
+                          </div>
+                        );
+                      }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de gênero</p>}
+                    </div>
+
+                    {/* Top Segmentos Combinados */}
+                    {breakdown.combined?.length > 0 && (
+                      <div className="audience-card" style={{ gridColumn: '1 / -1' }}>
+                        <div className="audience-card-title"><Icon name="sparkles" size={18} />Top Segmentos (Idade + Gênero)</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+                          {breakdown.combined.slice(0, 8).map((item, i) => {
+                            const emoji = item.gender === 'male' ? '👨' : item.gender === 'female' ? '👩' : '👤';
+                            const genderLabel = item.genderLabel || (item.gender === 'male' ? 'Masculino' : item.gender === 'female' ? 'Feminino' : item.gender);
+                            const isTop = i < 2 && item.conversions > 0;
+                            const isBad = item.cpa && item.cpa > AIEngine.config.metaCPA * 1.5;
+                            return (
+                              <div key={i} className={`audience-segment ${isTop ? 'top' : ''} ${isBad ? 'bad' : ''}`}>
+                                <div className="audience-segment-info">
+                                  <span className="audience-segment-label">{emoji} {genderLabel}, {item.age}</span>
+                                  <span className="audience-segment-meta">Gasto: {fmt.money(item.spend || 0)}</span>
+                                </div>
+                                <div className="audience-segment-value">
+                                  <div className="audience-segment-cpa" style={{color: isTop ? 'var(--accent-primary)' : isBad ? 'var(--accent-danger)' : 'inherit'}}>{item.cpa ? fmt.money(item.cpa) : '-'}</div>
+                                  <div className="audience-segment-conv">{item.conversions || 0} conv.</div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Por Dispositivo */}
+                    <div className="audience-card">
+                      <div className="audience-card-title"><Icon name="monitor" size={18} />Por Dispositivo</div>
+                      {(breakdown.devices || []).length > 0 ? (breakdown.devices || []).slice(0, 5).map((item, i) => {
+                        const maxSpend = Math.max(...(breakdown.devices || []).map(d => d.spend || 0));
+                        const pct = maxSpend > 0 ? ((item.spend || 0) / maxSpend * 100) : 0;
+                        const icon = item.device === 'mobile' || item.device === 'mobile_app' || item.device === 'mobile_web' ? 'smartphone' : 'monitor';
+                        const label = item.deviceLabel || item.device;
+                        return (
+                          <div className="audience-bar" key={i}>
+                            <div className="audience-bar-header">
+                              <span className="audience-bar-label" style={{display:'flex',alignItems:'center',gap:6}}><Icon name={icon} size={14} />{label}</span>
+                              <span className="audience-bar-value">{fmt.money(item.spend || 0)}</span>
+                            </div>
+                            <div className="audience-bar-track">
+                              <div className="audience-bar-fill" style={{ width: `${pct}%`, background: 'var(--accent-info)' }}></div>
+                            </div>
+                            <div className="audience-bar-stats">
+                              <span>CPA: {item.cpa ? fmt.money(item.cpa) : '-'}</span>
+                              <span>{item.conversions || 0} conv.</span>
+                            </div>
+                          </div>
+                        );
+                      }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de dispositivo</p>}
+                    </div>
+
+                    {/* Por Posicionamento */}
+                    <div className="audience-card">
+                      <div className="audience-card-title"><Icon name="layers" size={18} />Por Posicionamento</div>
+                      {(breakdown.placements || []).length > 0 ? (breakdown.placements || []).slice(0, 5).map((item, i) => {
+                        const maxSpend = Math.max(...(breakdown.placements || []).map(p => p.spend || 0));
+                        const pct = maxSpend > 0 ? ((item.spend || 0) / maxSpend * 100) : 0;
+                        const emoji = item.platform === 'facebook' ? '📘' : item.platform === 'instagram' ? '📸' : item.platform === 'messenger' ? '💬' : '🌐';
+                        const label = item.label || `${item.platform} - ${item.position}`;
+                        return (
+                          <div className="audience-bar" key={i}>
+                            <div className="audience-bar-header">
+                              <span className="audience-bar-label">{emoji} {label}</span>
+                              <span className="audience-bar-value">{fmt.money(item.spend || 0)}</span>
+                            </div>
+                            <div className="audience-bar-track">
+                              <div className="audience-bar-fill" style={{ width: `${pct}%`, background: item.platform === 'instagram' ? '#ec4899' : '#3b82f6' }}></div>
+                            </div>
+                            <div className="audience-bar-stats">
+                              <span>CPA: {item.cpa ? fmt.money(item.cpa) : '-'}</span>
+                              <span>{item.conversions || 0} conv.</span>
+                            </div>
+                          </div>
+                        );
+                      }) : <p style={{color:'var(--text-muted)',textAlign:'center',padding:20}}>Sem dados de posicionamento</p>}
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : page === 'creatives' ? (
               <>
                 <div className="stats-grid" style={{marginBottom:24}}>
