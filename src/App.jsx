@@ -7,12 +7,10 @@ const API_URL = 'https://adbrain-pro-api.vercel.app';
 
 const api = {
   getHeaders: () => {
-    const jwtToken = localStorage.getItem('adbrain_token');
     const metaToken = localStorage.getItem('adbrain_meta_token');
     return { 
       'Content-Type': 'application/json', 
-      ...(jwtToken && { Authorization: `Bearer ${jwtToken}` }),
-      ...(!jwtToken && metaToken && { Authorization: `Bearer ${metaToken}` })
+      ...(metaToken && { Authorization: `Bearer ${metaToken}` })
     };
   },
   get: async (endpoint) => {
@@ -537,12 +535,11 @@ export default function App() {
     const init = async () => {
       const savedUser = localStorage.getItem('adbrain_user');
       const savedToken = localStorage.getItem('adbrain_meta_token');
-      const savedJwt = localStorage.getItem('adbrain_token');
       if (savedUser) { 
         setUser(JSON.parse(savedUser)); 
         setPage('campaigns'); 
-        if (savedToken || savedJwt) { 
-          setToken(savedToken || ''); 
+        if (savedToken) { 
+          setToken(savedToken); 
           setConnected(true);
           // Carregar contas ao iniciar
           const res = await api.get('/api/meta/ad-accounts');
@@ -566,16 +563,21 @@ export default function App() {
   useEffect(() => { if (error || success) { const t = setTimeout(() => { setError(''); setSuccess(''); }, 4000); return () => clearTimeout(t); } }, [error, success]);
 
   const loadData = async () => {
+    if (!selectedAccount) return;
     setLoading(true);
     try {
-      const [campRes, breakRes, adsRes] = await Promise.all([
+      const [campRes, breakRes] = await Promise.all([
         api.get(`/api/meta/campaigns/${selectedAccount}?date_preset=${dateRange}`), 
-        api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`),
-        api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`)
+        api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`)
       ]);
       if (campRes.success) setCampaigns((campRes.campaigns || []).map(c => ({ ...c, score: AIEngine.calcScore(c), analysis: AIEngine.analyze(c) })));
       if (breakRes.success) setBreakdown(breakRes.breakdown);
-      if (adsRes.success) setAds(adsRes.ads || []);
+      
+      // Ads endpoint (opcional - pode não existir ainda)
+      try {
+        const adsRes = await api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`);
+        if (adsRes.success) setAds(adsRes.ads || []);
+      } catch (e) { /* ads endpoint não existe ainda */ }
     } catch (e) { setError('Erro ao carregar dados'); }
     setLoading(false);
   };
@@ -811,111 +813,4 @@ export default function App() {
                       return (
                         <div key={i} className="audience-item">
                           <span className="audience-label">{a.age}</span>
-                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: 'var(--accent-primary)' }}></div></div></div>
-                          <span className="audience-value">{a.conversions || 0} conv</span>
-                        </div>
-                      );
-                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de idade</p>}
-                  </div>
-                  <div className="audience-card">
-                    <h3 className="audience-card-title"><Icon name="smartphone" size={18} />Por Dispositivo</h3>
-                    {audienceStats?.deviceData?.length > 0 ? audienceStats.deviceData.map((d, i) => {
-                      const maxConv = Math.max(...audienceStats.deviceData.map(x => x.conversions || 0)) || 1;
-                      const pct = ((d.conversions || 0) / maxConv) * 100;
-                      return (
-                        <div key={i} className="audience-item">
-                          <span className="audience-label">{d.device === 'mobile' ? '📱 Mobile' : d.device === 'desktop' ? '🖥️ Desktop' : d.device}</span>
-                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: 'var(--accent-warning)' }}></div></div></div>
-                          <span className="audience-value">{d.conversions || 0} conv</span>
-                        </div>
-                      );
-                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de dispositivo</p>}
-                  </div>
-                  <div className="audience-card">
-                    <h3 className="audience-card-title"><Icon name="monitor" size={18} />Por Posicionamento</h3>
-                    {audienceStats?.placementData?.length > 0 ? audienceStats.placementData.slice(0, 5).map((p, i) => {
-                      const maxConv = Math.max(...audienceStats.placementData.map(x => x.conversions || 0)) || 1;
-                      const pct = ((p.conversions || 0) / maxConv) * 100;
-                      return (
-                        <div key={i} className="audience-item">
-                          <span className="audience-label">{p.placement || p.publisher_platform || 'N/A'}</span>
-                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: 'var(--accent-info)' }}></div></div></div>
-                          <span className="audience-value">{p.conversions || 0} conv</span>
-                        </div>
-                      );
-                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de posicionamento</p>}
-                  </div>
-                </div>
-              </>
-            ) : page === 'creatives' ? (
-              <>
-                <div className="stats-grid">
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="layers" size={18} /></div></div><div className="stat-value">{creativeStats.total}</div><div className="stat-label">Total de Anúncios</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="play" size={18} /></div></div><div className="stat-value">{creativeStats.active}</div><div className="stat-label">Ativos</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="activity" size={18} /></div></div><div className="stat-value">{fmt.pct(creativeStats.avgCtr)}</div><div className="stat-label">CTR Médio</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="trendingUp" size={18} /></div></div><div className="stat-value">{creativeStats.bestAd ? fmt.pct(creativeStats.bestAd.insights?.ctr || 0) : '-'}</div><div className="stat-label">Melhor CTR</div></div>
-                </div>
-                {creativeStats.bestAd && (
-                  <div className="ai-summary" style={{ marginBottom: 22 }}>
-                    <div className="ai-icon"><Icon name="sparkles" size={22} /></div>
-                    <div className="ai-content">
-                      <div className="ai-header"><span className="ai-title">Análise de Criativos</span><span className="ai-badge">IA</span></div>
-                      <p className="ai-text">
-                        Seu melhor anúncio é <strong className="success">"{(creativeStats.bestAd.name || '').substring(0, 30)}..."</strong> com CTR de {fmt.pct(creativeStats.bestAd.insights?.ctr || 0)}.
-                        {creativeStats.worstAd && <> O anúncio <strong className="danger">"{(creativeStats.worstAd.name || '').substring(0, 20)}..."</strong> precisa de atenção (CTR: {fmt.pct(creativeStats.worstAd.insights?.ctr || 0)}).</>}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Todos os Anúncios ({ads.length})</h3>
-                <div className="creative-grid">
-                  {ads.length === 0 ? (
-                    <div className="empty-state" style={{ gridColumn: '1/-1' }}><Icon name="layers" size={48} className="empty-icon" /><h3 className="empty-title">Nenhum anúncio</h3><p className="empty-text">Não encontramos anúncios nessa conta</p></div>
-                  ) : ads.map((ad, i) => {
-                    const ins = ad.insights || {};
-                    const isActive = ad.effectiveStatus === 'ACTIVE';
-                    const ctrScore = (ins.ctr || 0) >= 1.5 ? 'good' : (ins.ctr || 0) >= 0.8 ? 'warning' : 'bad';
-                    return (
-                      <div key={ad.id || i} className="creative-card">
-                        <div className="creative-thumb">
-                          {ad.thumbnail_url || ad.image_url ? (
-                            <img src={ad.thumbnail_url || ad.image_url} alt={ad.name} onError={(e) => { e.target.style.display = 'none'; }} />
-                          ) : (
-                            <Icon name={ad.creative?.object_type === 'VIDEO' ? 'video' : 'image'} size={40} style={{ color: 'var(--text-faint)' }} />
-                          )}
-                          <span className={`creative-status ${isActive ? 'active' : 'paused'}`}>{isActive ? 'Ativo' : 'Pausado'}</span>
-                          <div className="creative-indicator" style={{ background: ctrScore === 'good' ? 'var(--accent-primary)' : ctrScore === 'warning' ? 'var(--accent-warning)' : 'var(--accent-danger)', color: 'white' }}>
-                            {Math.round(ins.ctr || 0)}
-                          </div>
-                        </div>
-                        <div className="creative-info">
-                          <div className="creative-name" title={ad.name}>{ad.name || 'Sem nome'}</div>
-                          <div className="creative-metrics">
-                            <div className="creative-metric"><div className="creative-metric-label">Gasto</div><div className="creative-metric-value">{fmt.moneyCompact(ins.spend || 0)}</div></div>
-                            <div className="creative-metric"><div className="creative-metric-label">CTR</div><div className="creative-metric-value" style={{ color: ctrScore === 'good' ? 'var(--accent-primary)' : ctrScore === 'warning' ? 'var(--accent-warning)' : 'var(--accent-danger)' }}>{fmt.pct(ins.ctr || 0)}</div></div>
-                            <div className="creative-metric"><div className="creative-metric-label">Cliques</div><div className="creative-metric-value">{fmt.num(ins.clicks || 0)}</div></div>
-                            <div className="creative-metric"><div className="creative-metric-label">Conv.</div><div className="creative-metric-value">{ins.conversions || 0}</div></div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            ) : page === 'insights' ? (
-              <>
-                <div className="ai-summary"><div className="ai-icon"><Icon name="sparkles" size={22} /></div><div className="ai-content"><div className="ai-header"><span className="ai-title">Análise da Conta</span><span className="ai-badge">IA</span></div><p className="ai-text">Você tem <strong>{campaigns.length} campanhas</strong>. {summary.critical > 0 && <><strong className="danger">{summary.critical}</strong> precisam de atenção.</>} {summary.scalable > 0 && <><strong className="success">{summary.scalable}</strong> podem ser escaladas.</>}</p></div></div>
-                <h3 style={{fontSize:15,fontWeight:600,marginBottom:16}}>Problemas Detectados</h3>
-                <div className="issues-grid" style={{marginBottom:28}}>{campaigns.flatMap(c => (c.analysis?.issues || []).map((issue,i) => <div key={`${c.id}-${i}`} className={`issue-card ${issue.severity}`}><div className="issue-icon"><Icon name={issue.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{issue.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {issue.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.issues?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="checkCircle" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Nenhum problema detectado.</div></div>}</div>
-                <h3 style={{fontSize:15,fontWeight:600,marginBottom:16}}>Oportunidades</h3>
-                <div className="issues-grid">{campaigns.flatMap(c => (c.analysis?.opportunities || []).map((opp,i) => <div key={`${c.id}-o-${i}`} className="issue-card opportunity"><div className="issue-icon"><Icon name={opp.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{opp.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {opp.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.opportunities?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="lightbulb" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Melhore as campanhas para desbloquear oportunidades.</div></div>}</div>
-              </>
-            ) : (
-              <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Em breve</h3><p className="empty-text">Seção em desenvolvimento.</p></div>
-            )}
-          </div>
-        </main>
-      </div>
-    </>
-  );
-}
+                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, backgr
