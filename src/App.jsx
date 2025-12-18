@@ -579,7 +579,19 @@ export default function App() {
           analysis: AIEngine.analyze(c) 
         })));
       }
-      if (breakRes.success) setBreakdown(breakRes.breakdown);
+      
+      // CORRIGIDO: Normaliza estrutura do breakdown
+      if (breakRes.success && breakRes.breakdown) {
+        const bd = breakRes.breakdown;
+        setBreakdown({
+          age: bd.ageGender?.byAge || bd.age || [],
+          gender: bd.ageGender?.byGender || bd.gender || [],
+          combined: bd.ageGender?.combined || bd.combined || [],
+          devices: bd.devices || [],
+          placements: bd.placements || []
+        });
+      }
+      
       if (adsRes.success) setAds(adsRes.ads || []);
     } catch (e) { 
       console.error('[AdBrain] Erro ao carregar dados:', e);
