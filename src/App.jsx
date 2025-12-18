@@ -43,7 +43,6 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     play: <polygon points="5 3 19 12 5 21 5 3"/>,
     pause: <><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></>,
     chevronDown: <polyline points="6 9 12 15 18 9"/>,
-    chevronLeft: <polyline points="15 18 9 12 15 6"/>,
     search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
     dollarSign: <><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>,
     trendingUp: <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
@@ -63,6 +62,9 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     lightbulb: <><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></>,
     sliders: <><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></>,
     link: <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>,
+    chevronLeft: <polyline points="15 18 9 12 15 6"/>,
+    mail: <><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>,
+    shieldCheck: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>{icons[name] || icons.alertCircle}</svg>;
 };
@@ -500,10 +502,31 @@ export default function App() {
   ];
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('adbrain_user');
-    const savedToken = localStorage.getItem('adbrain_meta_token');
-    const savedAccount = localStorage.getItem('adbrain_account');
-    if (savedUser) { setUser(JSON.parse(savedUser)); setPage('campaigns'); if (savedToken) { setToken(savedToken); setConnected(true); if (savedAccount) setSelectedAccount(savedAccount); } }
+    const init = async () => {
+      const savedUser = localStorage.getItem('adbrain_user');
+      const savedToken = localStorage.getItem('adbrain_meta_token');
+      if (savedUser) { 
+        setUser(JSON.parse(savedUser)); 
+        setPage('campaigns'); 
+        if (savedToken) { 
+          setToken(savedToken); 
+          setConnected(true);
+          // Carregar contas ao iniciar
+          const res = await api.get('/api/meta/ad-accounts');
+          if (res.success && res.accounts?.length > 0) {
+            setAccounts(res.accounts);
+            const savedAccount = localStorage.getItem('adbrain_account');
+            if (savedAccount && res.accounts.find(a => a.id === savedAccount)) {
+              setSelectedAccount(savedAccount);
+            } else {
+              setSelectedAccount(res.accounts[0].id);
+              localStorage.setItem('adbrain_account', res.accounts[0].id);
+            }
+          }
+        } 
+      }
+    };
+    init();
   }, []);
 
   useEffect(() => { if (connected && selectedAccount) loadData(); }, [connected, selectedAccount, dateRange]);
@@ -526,8 +549,8 @@ export default function App() {
   const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setPage('login'); };
   const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
   const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
-  const handleForgotPassword = async (e) => { e.preventDefault(); if (!resetEmail) { setError('Digite seu email'); return; } setLoading(true); const res = await api.post('/api/auth/forgot-password', { email: resetEmail }); setLoading(false); if (res.success) { setSuccess('Código enviado!'); setResetStep(2); } else { setError(res.error || 'Erro'); } };
-  const handleResetPassword = async (e) => { e.preventDefault(); if (!resetCode || resetCode.length !== 6) { setError('Código de 6 dígitos'); return; } if (newPassword.length < 6) { setError('Senha mín 6 chars'); return; } if (newPassword !== confirmPassword) { setError('Senhas diferentes'); return; } setLoading(true); const res = await api.post('/api/auth/reset-password', { email: resetEmail, code: resetCode, newPassword }); setLoading(false); if (res.success) { setSuccess('Senha alterada!'); setResetStep(0); setResetEmail(''); setResetCode(''); setNewPassword(''); setConfirmPassword(''); } else { setError(res.error || 'Erro'); } };
+  const handleForgotPassword = async (e) => { e.preventDefault(); if (!resetEmail) { setError('Digite seu email'); return; } setLoading(true); const res = await api.post('/api/auth/forgot-password', { email: resetEmail }); setLoading(false); if (res.success) { setSuccess('Código enviado para seu email!'); setResetStep(2); } else { setError(res.error || 'Erro ao enviar código'); } };
+  const handleResetPassword = async (e) => { e.preventDefault(); if (!resetCode || resetCode.length !== 6) { setError('Digite o código de 6 dígitos'); return; } if (newPassword.length < 6) { setError('Senha deve ter no mínimo 6 caracteres'); return; } if (newPassword !== confirmPassword) { setError('Senhas não conferem'); return; } setLoading(true); const res = await api.post('/api/auth/reset-password', { email: resetEmail, code: resetCode, newPassword }); setLoading(false); if (res.success) { setSuccess('Senha alterada com sucesso!'); setResetStep(0); setResetEmail(''); setResetCode(''); setNewPassword(''); setConfirmPassword(''); } else { setError(res.error || 'Erro ao alterar senha'); } };
   const handleAction = async (action, campaignId) => {
     setLoading(true);
     let body = { objectId: campaignId, objectType: 'campaign' };
@@ -580,8 +603,8 @@ export default function App() {
               <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Aguarde...' : (page === 'register' ? 'Criar Conta' : 'Entrar')}</button>
               <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text-muted)' }}>{page === 'register' ? 'Já tem conta?' : 'Não tem conta?'} <span onClick={() => setPage(page === 'login' ? 'register' : 'login')} style={{ color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 500 }}>{page === 'register' ? 'Fazer login' : 'Criar conta'}</span></p>
             </form>}
-            {resetStep === 1 && <form onSubmit={handleForgotPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-info-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="mail" size={24} style={{ color: 'var(--accent-info)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Recuperar senha</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Digite seu email</p></div><div style={{ marginBottom: 20 }}><input className="input" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="seu@email.com" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Enviando...' : 'Enviar código'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => { setResetStep(0); setResetEmail(''); setError(''); }} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar</span></p></form>}
-            {resetStep === 2 && <form onSubmit={handleResetPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-primary-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="shieldCheck" size={24} style={{ color: 'var(--accent-primary)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Verificar código</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Código enviado para {resetEmail}</p></div><div style={{ marginBottom: 14 }}><input className="input" type="text" value={resetCode} onChange={(e) => setResetCode(e.target.value.replace(/[^0-9]/g, '').slice(0,6))} placeholder="000000" maxLength={6} style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} required /></div><div style={{ marginBottom: 14 }}><input className="input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nova senha (mín 6)" required /></div><div style={{ marginBottom: 20 }}><input className="input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmar senha" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Alterando...' : 'Alterar senha'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => setResetStep(1)} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar</span></p></form>}
+            {resetStep === 1 && <form onSubmit={handleForgotPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-info-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="mail" size={24} style={{ color: 'var(--accent-info)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Recuperar senha</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Digite seu email para receber o código</p></div><div style={{ marginBottom: 20 }}><input className="input" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="seu@email.com" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Enviando...' : 'Enviar código'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => { setResetStep(0); setResetEmail(''); setError(''); }} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar ao login</span></p></form>}
+            {resetStep === 2 && <form onSubmit={handleResetPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-primary-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="shieldCheck" size={24} style={{ color: 'var(--accent-primary)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Verificar código</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Código enviado para {resetEmail}</p></div><div style={{ marginBottom: 14 }}><input className="input" type="text" value={resetCode} onChange={(e) => setResetCode(e.target.value.replace(/[^0-9]/g, '').slice(0,6))} placeholder="000000" maxLength={6} style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} required /></div><div style={{ marginBottom: 14 }}><input className="input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nova senha (mín 6 caracteres)" required /></div><div style={{ marginBottom: 20 }}><input className="input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmar nova senha" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Alterando...' : 'Alterar senha'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => setResetStep(1)} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar</span></p></form>}
           </div>
         </div>
       </>
