@@ -530,6 +530,24 @@ export default function App() {
   }, []);
 
   useEffect(() => { if (connected && selectedAccount) loadData(); }, [connected, selectedAccount, dateRange]);
+  useEffect(() => { 
+    if (connected && accounts.length === 0) {
+      const fetchAccounts = async () => {
+        const res = await api.get('/api/meta/ad-accounts');
+        if (res.success && res.accounts?.length > 0) {
+          setAccounts(res.accounts);
+          const savedAccount = localStorage.getItem('adbrain_account');
+          if (savedAccount && res.accounts.find(a => a.id === savedAccount)) {
+            setSelectedAccount(savedAccount);
+          } else {
+            setSelectedAccount(res.accounts[0].id);
+            localStorage.setItem('adbrain_account', res.accounts[0].id);
+          }
+        }
+      };
+      fetchAccounts();
+    }
+  }, [connected]);
   useEffect(() => { if (error || success) { const t = setTimeout(() => { setError(''); setSuccess(''); }, 4000); return () => clearTimeout(t); } }, [error, success]);
 
   const loadData = async () => {
@@ -637,7 +655,7 @@ export default function App() {
           <header className="header">
             <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : 'Visão geral'}</p></div></div>
             <div className="header-right">
-              {connected && accounts.length > 0 && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
+              {connected && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.length > 0 ? accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>) : <option value="">Carregando contas...</option>}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
               <div className="select-wrap"><select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>{dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>
               <button className="btn btn-secondary" onClick={loadData} disabled={loading}><Icon name="refreshCw" size={15} className={loading ? 'animate-spin' : ''} />Atualizar</button>
             </div>
