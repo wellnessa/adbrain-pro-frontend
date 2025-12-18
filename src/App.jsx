@@ -7,11 +7,8 @@ const API_URL = 'https://adbrain-pro-api.vercel.app';
 
 const api = {
   getHeaders: () => {
-    const metaToken = localStorage.getItem('adbrain_meta_token');
-    return { 
-      'Content-Type': 'application/json', 
-      ...(metaToken && { Authorization: `Bearer ${metaToken}` })
-    };
+    const token = localStorage.getItem('adbrain_meta_token');
+    return { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) };
   },
   get: async (endpoint) => {
     try {
@@ -65,12 +62,6 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     lightbulb: <><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></>,
     sliders: <><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></>,
     link: <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>,
-    layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
-    monitor: <><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></>,
-    smartphone: <><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></>,
-    pieChart: <><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></>,
-    video: <><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></>,
-    trendingDown: <><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>{icons[name] || icons.alertCircle}</svg>;
 };
@@ -179,7 +170,6 @@ const styles = `
   --accent-danger: #ef4444; --accent-danger-muted: rgba(239,68,68,0.12);
   --accent-warning: #f59e0b; --accent-warning-muted: rgba(245,158,11,0.12);
   --accent-info: #3b82f6; --accent-info-muted: rgba(59,130,246,0.12);
-  --accent-pink: #ec4899; --accent-pink-muted: rgba(236,72,153,0.12);
   --font-sans: 'Outfit', -apple-system, sans-serif; --font-mono: 'JetBrains Mono', monospace;
   --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
 }
@@ -366,33 +356,6 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 
 @media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 50px 1fr 85px 85px 100px; } }
 @media (max-width: 1200px) { .settings-grid { grid-template-columns: 1fr; } .score-breakdown { grid-template-columns: repeat(2, 1fr); } }
-
-.creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-.creative-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; transition: all 0.2s ease; }
-.creative-card:hover { border-color: var(--border-muted); transform: translateY(-2px); }
-.creative-thumb { height: 140px; background: var(--bg-muted); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-.creative-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.creative-status { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
-.creative-status.active { background: var(--accent-primary-muted); color: var(--accent-primary); }
-.creative-status.paused { background: var(--bg-elevated); color: var(--text-muted); }
-.creative-indicator { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-.creative-info { padding: 14px; }
-.creative-name { font-size: 13px; font-weight: 600; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.creative-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.creative-metric { }
-.creative-metric-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
-.creative-metric-value { font-size: 14px; font-weight: 600; font-family: var(--font-mono); }
-
-.progress-bar { height: 8px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; margin-top: 6px; }
-.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
-
-.audience-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; }
-.audience-card-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-.audience-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
-.audience-item:last-child { border-bottom: none; }
-.audience-label { font-size: 13px; color: var(--text-secondary); }
-.audience-value { font-size: 13px; font-weight: 600; font-family: var(--font-mono); }
-.audience-bar-wrap { flex: 1; margin: 0 12px; }
 `;
 
 // =============================================================================
@@ -516,7 +479,6 @@ export default function App() {
   const [dateRange, setDateRange] = useState('last_30d');
   const [campaigns, setCampaigns] = useState([]);
   const [breakdown, setBreakdown] = useState(null);
-  const [ads, setAds] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [activeTab, setActiveTab] = useState('insights');
   const [filter, setFilter] = useState('all');
@@ -541,7 +503,6 @@ export default function App() {
         if (savedToken) { 
           setToken(savedToken); 
           setConnected(true);
-          // Carregar contas ao iniciar
           const res = await api.get('/api/meta/ad-accounts');
           if (res.success && res.adAccounts?.length > 0) {
             setAccounts(res.adAccounts);
@@ -563,47 +524,22 @@ export default function App() {
   useEffect(() => { if (error || success) { const t = setTimeout(() => { setError(''); setSuccess(''); }, 4000); return () => clearTimeout(t); } }, [error, success]);
 
   const loadData = async () => {
-    if (!selectedAccount) return;
     setLoading(true);
     try {
-      const [campRes, breakRes] = await Promise.all([
-        api.get(`/api/meta/campaigns/${selectedAccount}?date_preset=${dateRange}`), 
-        api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`)
-      ]);
+      const [campRes, breakRes] = await Promise.all([api.get(`/api/meta/campaigns/${selectedAccount}?date_preset=${dateRange}`), api.get(`/api/meta/breakdown/${selectedAccount}?date_preset=${dateRange}`)]);
       if (campRes.success) setCampaigns((campRes.campaigns || []).map(c => ({ ...c, score: AIEngine.calcScore(c), analysis: AIEngine.analyze(c) })));
       if (breakRes.success) setBreakdown(breakRes.breakdown);
-      
-      // Ads endpoint (opcional - pode não existir ainda)
-      try {
-        const adsRes = await api.get(`/api/meta/ads/${selectedAccount}?date_preset=${dateRange}`);
-        if (adsRes.success) setAds(adsRes.ads || []);
-      } catch (e) { /* ads endpoint não existe ainda */ }
     } catch (e) { setError('Erro ao carregar dados'); }
     setLoading(false);
   };
 
   const loadAccounts = async () => { const res = await api.get('/api/meta/ad-accounts'); if (res.success && res.adAccounts?.length > 0) { setAccounts(res.adAccounts); const first = res.adAccounts[0].id; setSelectedAccount(first); localStorage.setItem('adbrain_account', first); } };
 
-  const handleLogin = async (e) => { 
-    e.preventDefault(); 
-    setLoading(true); 
-    const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); 
-    setLoading(false); 
-    if (res.success) { 
-      localStorage.setItem('adbrain_user', JSON.stringify(res.user)); 
-      if (res.token) localStorage.setItem('adbrain_token', res.token);
-      setUser(res.user); 
-      setPage('campaigns');
-      if (res.hasMetaToken) {
-        setConnected(true);
-        loadAccounts();
-      }
-    } else setError(res.error || 'Erro ao fazer login'); 
-  };
-  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); if (res.token) localStorage.setItem('adbrain_token', res.token); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
-  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setAds([]); setBreakdown(null); setPage('login'); };
-  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess(res.tokenSaved ? 'Meta conectado e salvo!' : 'Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
-  const handleDisconnect = async () => { await api.post('/api/meta/disconnect'); localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setAds([]); setBreakdown(null); };
+  const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao fazer login'); };
+  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
+  const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setPage('login'); };
+  const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
+  const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
   const handleAction = async (action, campaignId) => {
     setLoading(true);
     let body = { objectId: campaignId, objectType: 'campaign' };
@@ -635,35 +571,6 @@ export default function App() {
 
   const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
   const filterCounts = useMemo(() => ({ all: campaigns.length, active: campaigns.filter(c => c.effectiveStatus === 'ACTIVE').length, paused: campaigns.filter(c => c.effectiveStatus === 'PAUSED').length, critical: campaigns.filter(c => c.score?.total < 40).length, scale: campaigns.filter(c => c.score?.total >= 75 && c.insights?.conversions > 0).length }), [campaigns]);
-
-  // Stats para criativos
-  const creativeStats = useMemo(() => {
-    const total = ads.length;
-    const active = ads.filter(a => a.effectiveStatus === 'ACTIVE').length;
-    const withSpend = ads.filter(a => (a.insights?.spend || 0) > 0);
-    const avgCtr = withSpend.length > 0 ? withSpend.reduce((s, a) => s + (a.insights?.ctr || 0), 0) / withSpend.length : 0;
-    const bestAd = [...ads].sort((a, b) => (b.insights?.ctr || 0) - (a.insights?.ctr || 0))[0];
-    const worstAd = [...ads].filter(a => (a.insights?.spend || 0) > 20).sort((a, b) => (a.insights?.ctr || 0) - (b.insights?.ctr || 0))[0];
-    return { total, active, avgCtr, bestAd, worstAd };
-  }, [ads]);
-
-  // Stats para público
-  const audienceStats = useMemo(() => {
-    if (!breakdown) return null;
-    const genderData = breakdown.gender || [];
-    const ageData = breakdown.age || [];
-    const deviceData = breakdown.device || [];
-    const placementData = breakdown.placement || [];
-    
-    const totalConv = genderData.reduce((s, g) => s + (g.conversions || 0), 0);
-    const totalSpend = genderData.reduce((s, g) => s + (g.spend || 0), 0);
-    
-    const bestGender = [...genderData].sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0];
-    const bestAge = [...ageData].sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0];
-    const bestDevice = [...deviceData].sort((a, b) => (b.conversions || 0) - (a.conversions || 0))[0];
-    
-    return { genderData, ageData, deviceData, placementData, totalConv, totalSpend, bestGender, bestAge, bestDevice };
-  }, [breakdown]);
 
   // LOGIN/REGISTER
   if (page === 'login' || page === 'register') {
@@ -702,7 +609,6 @@ export default function App() {
               <div className={`nav-item ${page === 'dashboard' ? 'active' : ''}`} onClick={() => setPage('dashboard')}><Icon name="layoutDashboard" size={18} />Dashboard</div>
               <div className={`nav-item ${page === 'campaigns' ? 'active' : ''}`} onClick={() => setPage('campaigns')}><Icon name="target" size={18} />Campanhas{filterCounts.critical > 0 && <span className="nav-badge">{filterCounts.critical}</span>}</div>
               <div className={`nav-item ${page === 'audience' ? 'active' : ''}`} onClick={() => setPage('audience')}><Icon name="users" size={18} />Público</div>
-              <div className={`nav-item ${page === 'creatives' ? 'active' : ''}`} onClick={() => setPage('creatives')}><Icon name="layers" size={18} />Criativos</div>
               <div className={`nav-item ${page === 'insights' ? 'active' : ''}`} onClick={() => setPage('insights')}><Icon name="sparkles" size={18} />Insights IA</div>
             </div>
             <div className="nav-group">
@@ -715,7 +621,7 @@ export default function App() {
 
         <main className="main-content">
           <header className="header">
-            <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : page === 'creatives' ? 'Criativos' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : page === 'creatives' ? 'Performance dos anúncios' : page === 'audience' ? 'Entenda seu público' : 'Visão geral'}</p></div></div>
+            <div className="header-left"><div><h1 className="header-title">{page === 'campaigns' ? 'Campanhas' : page === 'dashboard' ? 'Dashboard' : page === 'settings' ? 'Configurações' : page === 'audience' ? 'Análise de Público' : 'Insights IA'}</h1><p className="header-subtitle">{page === 'campaigns' ? 'Gerencie suas campanhas' : 'Visão geral'}</p></div></div>
             <div className="header-right">
               {connected && accounts.length > 0 && <div className="select-wrap"><select className="select" value={selectedAccount} onChange={(e) => { setSelectedAccount(e.target.value); localStorage.setItem('adbrain_account', e.target.value); }}>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name || acc.id}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>}
               <div className="select-wrap"><select className="select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>{dateOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}</select><Icon name="chevronDown" size={14} className="select-icon" /></div>
@@ -782,35 +688,25 @@ export default function App() {
                 <div className="settings-card"><h3 className="settings-card-title"><Icon name="link" size={18} />Conexão Meta</h3><div className="settings-row"><span className="settings-label">Status</span><span className={`connection-badge ${connected ? 'connected' : 'disconnected'}`}><span className="connection-dot"></span>{connected ? 'Conectado' : 'Desconectado'}</span></div>{connected && <div style={{marginTop:16}}><button className="btn btn-danger" onClick={handleDisconnect}><Icon name="x" size={16} />Desconectar</button></div>}</div>
                 <div className="settings-card"><h3 className="settings-card-title"><Icon name="sliders" size={18} />Metas</h3><div className="settings-row"><span className="settings-label">Meta CPA</span><span className="settings-value">{fmt.money(AIEngine.config.metaCPA)}</span></div><div className="settings-row"><span className="settings-label">Meta ROAS</span><span className="settings-value">{AIEngine.config.metaROAS}x</span></div><div className="settings-row"><span className="settings-label">CTR Mínimo</span><span className="settings-value">{AIEngine.config.ctrMinimo}%</span></div></div>
               </div>
-            ) : page === 'audience' ? (
+            ) : page === 'audience' && breakdown ? (
+              <div className="settings-grid">
+                <div className="settings-card"><h3 className="settings-card-title"><Icon name="users" size={18} />Por Gênero</h3>{breakdown.gender?.map((g,i) => <div className="settings-row" key={i}><span className="settings-label">{g.gender === 'male' ? 'Masculino' : 'Feminino'}</span><span className="settings-value">{g.conversions || 0} conv.</span></div>) || <p style={{color:'var(--text-muted)'}}>Sem dados</p>}</div>
+                <div className="settings-card"><h3 className="settings-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>{breakdown.age?.map((a,i) => <div className="settings-row" key={i}><span className="settings-label">{a.age}</span><span className="settings-value">{a.conversions || 0} conv.</span></div>) || <p style={{color:'var(--text-muted)'}}>Sem dados</p>}</div>
+              </div>
+            ) : page === 'insights' ? (
               <>
-                <div className="stats-grid">
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="users" size={18} /></div></div><div className="stat-value">{audienceStats?.totalConv || 0}</div><div className="stat-label">Conversões Totais</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="checkCircle" size={18} /></div></div><div className="stat-value">{audienceStats?.bestGender?.gender === 'female' ? 'Feminino' : audienceStats?.bestGender?.gender === 'male' ? 'Masculino' : '-'}</div><div className="stat-label">Melhor Gênero</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="barChart3" size={18} /></div></div><div className="stat-value">{audienceStats?.bestAge?.age || '-'}</div><div className="stat-label">Melhor Idade</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="smartphone" size={18} /></div></div><div className="stat-value">{audienceStats?.bestDevice?.device || '-'}</div><div className="stat-label">Melhor Device</div></div>
-                </div>
-                <div className="settings-grid">
-                  <div className="audience-card">
-                    <h3 className="audience-card-title"><Icon name="users" size={18} />Por Gênero</h3>
-                    {audienceStats?.genderData?.length > 0 ? audienceStats.genderData.map((g, i) => {
-                      const maxConv = Math.max(...audienceStats.genderData.map(x => x.conversions || 0)) || 1;
-                      const pct = ((g.conversions || 0) / maxConv) * 100;
-                      return (
-                        <div key={i} className="audience-item">
-                          <span className="audience-label">{g.gender === 'male' ? '👨 Masculino' : '👩 Feminino'}</span>
-                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, background: g.gender === 'female' ? 'var(--accent-pink)' : 'var(--accent-info)' }}></div></div></div>
-                          <span className="audience-value">{g.conversions || 0} conv</span>
-                        </div>
-                      );
-                    }) : <p style={{ color: 'var(--text-muted)', padding: 10 }}>Sem dados de gênero</p>}
-                  </div>
-                  <div className="audience-card">
-                    <h3 className="audience-card-title"><Icon name="barChart3" size={18} />Por Idade</h3>
-                    {audienceStats?.ageData?.length > 0 ? audienceStats.ageData.map((a, i) => {
-                      const maxConv = Math.max(...audienceStats.ageData.map(x => x.conversions || 0)) || 1;
-                      const pct = ((a.conversions || 0) / maxConv) * 100;
-                      return (
-                        <div key={i} className="audience-item">
-                          <span className="audience-label">{a.age}</span>
-                          <div className="audience-bar-wrap"><div className="progress-bar"><div className="progress-fill" style={{ width: `${pct}%`, backgr
+                <div className="ai-summary"><div className="ai-icon"><Icon name="sparkles" size={22} /></div><div className="ai-content"><div className="ai-header"><span className="ai-title">Análise da Conta</span><span className="ai-badge">IA</span></div><p className="ai-text">Você tem <strong>{campaigns.length} campanhas</strong>. {summary.critical > 0 && <><strong className="danger">{summary.critical}</strong> precisam de atenção.</>} {summary.scalable > 0 && <><strong className="success">{summary.scalable}</strong> podem ser escaladas.</>}</p></div></div>
+                <h3 style={{fontSize:15,fontWeight:600,marginBottom:16}}>Problemas Detectados</h3>
+                <div className="issues-grid" style={{marginBottom:28}}>{campaigns.flatMap(c => (c.analysis?.issues || []).map((issue,i) => <div key={`${c.id}-${i}`} className={`issue-card ${issue.severity}`}><div className="issue-icon"><Icon name={issue.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{issue.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {issue.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.issues?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="checkCircle" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Nenhum problema detectado.</div></div>}</div>
+                <h3 style={{fontSize:15,fontWeight:600,marginBottom:16}}>Oportunidades</h3>
+                <div className="issues-grid">{campaigns.flatMap(c => (c.analysis?.opportunities || []).map((opp,i) => <div key={`${c.id}-o-${i}`} className="issue-card opportunity"><div className="issue-icon"><Icon name={opp.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{opp.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {opp.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.opportunities?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="lightbulb" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Melhore as campanhas para desbloquear oportunidades.</div></div>}</div>
+              </>
+            ) : (
+              <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Em breve</h3><p className="empty-text">Seção em desenvolvimento.</p></div>
+            )}
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
