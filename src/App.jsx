@@ -43,6 +43,7 @@ const Icon = ({ name, size = 20, className = '', style = {} }) => {
     play: <polygon points="5 3 19 12 5 21 5 3"/>,
     pause: <><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></>,
     chevronDown: <polyline points="6 9 12 15 18 9"/>,
+    chevronLeft: <polyline points="15 18 9 12 15 6"/>,
     search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
     dollarSign: <><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>,
     trendingUp: <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></>,
@@ -486,6 +487,11 @@ export default function App() {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authName, setAuthName] = useState('');
+  const [resetStep, setResetStep] = useState(0);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const dateOptions = [
     { value: 'today', label: 'Hoje' }, { value: 'yesterday', label: 'Ontem' }, { value: 'last_7d', label: 'Últimos 7 dias' },
@@ -520,6 +526,8 @@ export default function App() {
   const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setPage('login'); };
   const handleConnect = async () => { if (!token.trim()) { setError('Cole o token'); return; } setLoading(true); const res = await api.post('/api/meta/connect', { accessToken: token }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_meta_token', token); setConnected(true); setSuccess('Meta conectado!'); loadAccounts(); } else setError(res.error || 'Token inválido'); };
   const handleDisconnect = () => { localStorage.removeItem('adbrain_meta_token'); localStorage.removeItem('adbrain_account'); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); };
+  const handleForgotPassword = async (e) => { e.preventDefault(); if (!resetEmail) { setError('Digite seu email'); return; } setLoading(true); const res = await api.post('/api/auth/forgot-password', { email: resetEmail }); setLoading(false); if (res.success) { setSuccess('Código enviado!'); setResetStep(2); } else { setError(res.error || 'Erro'); } };
+  const handleResetPassword = async (e) => { e.preventDefault(); if (!resetCode || resetCode.length !== 6) { setError('Código de 6 dígitos'); return; } if (newPassword.length < 6) { setError('Senha mín 6 chars'); return; } if (newPassword !== confirmPassword) { setError('Senhas diferentes'); return; } setLoading(true); const res = await api.post('/api/auth/reset-password', { email: resetEmail, code: resetCode, newPassword }); setLoading(false); if (res.success) { setSuccess('Senha alterada!'); setResetStep(0); setResetEmail(''); setResetCode(''); setNewPassword(''); setConfirmPassword(''); } else { setError(res.error || 'Erro'); } };
   const handleAction = async (action, campaignId) => {
     setLoading(true);
     let body = { objectId: campaignId, objectType: 'campaign' };
@@ -563,14 +571,17 @@ export default function App() {
               <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>AdBrain Pro</h1>
               <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Gestão inteligente de Facebook Ads</p>
             </div>
-            {error && <div style={{ background: 'var(--accent-danger-muted)', border: '1px solid rgba(239,68,68,0.25)', color: 'var(--accent-danger)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 18, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name="alertCircle" size={16} />{error}</div>}
-            <form onSubmit={page === 'register' ? handleRegister : handleLogin}>
+            {(error || success) && <div style={{ background: error ? 'var(--accent-danger-muted)' : 'var(--accent-primary-muted)', border: error ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(16,185,129,0.25)', color: error ? 'var(--accent-danger)' : 'var(--accent-primary)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: 18, fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name={error ? 'alertCircle' : 'checkCircle'} size={16} />{error || success}</div>}
+            {resetStep === 0 && <form onSubmit={page === 'register' ? handleRegister : handleLogin}>
               {page === 'register' && <div style={{ marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome</label><input className="input" type="text" value={authName} onChange={(e) => setAuthName(e.target.value)} placeholder="Seu nome" required /></div>}
               <div style={{ marginBottom: 14 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Email</label><input className="input" type="email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="seu@email.com" required /></div>
-              <div style={{ marginBottom: 22 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="********" required /></div>
+              <div style={{ marginBottom: page === 'login' ? 8 : 22 }}><label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Senha</label><input className="input" type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="********" required /></div>
+              {page === 'login' && <div style={{ textAlign: 'right', marginBottom: 16 }}><button type="button" onClick={() => setResetStep(1)} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: 12, cursor: 'pointer' }}>Esqueci minha senha</button></div>}
               <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Aguarde...' : (page === 'register' ? 'Criar Conta' : 'Entrar')}</button>
               <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text-muted)' }}>{page === 'register' ? 'Já tem conta?' : 'Não tem conta?'} <span onClick={() => setPage(page === 'login' ? 'register' : 'login')} style={{ color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 500 }}>{page === 'register' ? 'Fazer login' : 'Criar conta'}</span></p>
-            </form>
+            </form>}
+            {resetStep === 1 && <form onSubmit={handleForgotPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-info-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="mail" size={24} style={{ color: 'var(--accent-info)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Recuperar senha</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Digite seu email</p></div><div style={{ marginBottom: 20 }}><input className="input" type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="seu@email.com" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Enviando...' : 'Enviar código'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => { setResetStep(0); setResetEmail(''); setError(''); }} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar</span></p></form>}
+            {resetStep === 2 && <form onSubmit={handleResetPassword}><div style={{ textAlign: 'center', marginBottom: 24 }}><div style={{ width: 50, height: 50, background: 'var(--accent-primary-muted)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}><Icon name="shieldCheck" size={24} style={{ color: 'var(--accent-primary)' }} /></div><h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Verificar código</h2><p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Código enviado para {resetEmail}</p></div><div style={{ marginBottom: 14 }}><input className="input" type="text" value={resetCode} onChange={(e) => setResetCode(e.target.value.replace(/[^0-9]/g, '').slice(0,6))} placeholder="000000" maxLength={6} style={{ textAlign: 'center', fontSize: 20, letterSpacing: 8 }} required /></div><div style={{ marginBottom: 14 }}><input className="input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nova senha (mín 6)" required /></div><div style={{ marginBottom: 20 }}><input className="input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmar senha" required /></div><button type="submit" className="btn btn-primary" style={{ width: '100%', padding: 12 }} disabled={loading}>{loading ? 'Alterando...' : 'Alterar senha'}</button><p style={{ textAlign: 'center', marginTop: 18 }}><span onClick={() => setResetStep(1)} style={{ color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}><Icon name="chevronLeft" size={14} style={{ verticalAlign: 'middle' }} /> Voltar</span></p></form>}
           </div>
         </div>
       </>
