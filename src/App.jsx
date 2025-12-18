@@ -7,8 +7,12 @@ const API_URL = 'https://adbrain-pro-api.vercel.app';
 
 const api = {
   getHeaders: () => {
-    const token = localStorage.getItem('adbrain_meta_token');
-    return { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) };
+    const metaToken = localStorage.getItem('adbrain_meta_token');
+    const jwtToken = localStorage.getItem('adbrain_jwt');
+    const headers = { 'Content-Type': 'application/json' };
+    if (metaToken) headers['Authorization'] = `Bearer ${metaToken}`;
+    if (jwtToken) headers['X-User-JWT'] = jwtToken;
+    return headers;
   },
   get: async (endpoint) => {
     try {
@@ -641,8 +645,8 @@ export default function App() {
     localStorage.setItem('adbrain_account', newAccount);
   };
 
-  const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao fazer login'); };
-  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
+  const handleLogin = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/login', { email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); if (res.token) localStorage.setItem('adbrain_jwt', res.token); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao fazer login'); };
+  const handleRegister = async (e) => { e.preventDefault(); setLoading(true); const res = await api.post('/api/auth/register', { name: authName, email: authEmail, password: authPassword }); setLoading(false); if (res.success) { localStorage.setItem('adbrain_user', JSON.stringify(res.user)); if (res.token) localStorage.setItem('adbrain_jwt', res.token); setUser(res.user); setPage('campaigns'); } else setError(res.error || 'Erro ao criar conta'); };
   const handleLogout = () => { localStorage.clear(); setUser(null); setConnected(false); setToken(''); setAccounts([]); setSelectedAccount(''); setCampaigns([]); setPage('login'); };
   
   // CORRIGIDO: handleConnect agora só seta connected, o useEffect cuida do resto
@@ -759,11 +763,35 @@ export default function App() {
                 <div className="stats-grid" style={{marginBottom:24}}>
                   <div className="stat-card"><div className="stat-header"><div className="stat-icon blue"><Icon name="layers" size={18} /></div></div><div className="stat-value">{ads.length}</div><div className="stat-label">Total de Anúncios</div></div>
                   <div className="stat-card"><div className="stat-header"><div className="stat-icon green"><Icon name="play" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.effectiveStatus === 'ACTIVE').length}</div><div className="stat-label">Ativos</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="thumbsUp" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.insights?.ctr > 1).length}</div><div className="stat-label">CTR {'>'} 1%</div></div>
-                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="thumbsDown" size={18} /></div></div><div className="stat-value">{ads.filter(a => a.insights?.spend > 50 && a.insights?.conversions === 0).length}</div><div className="stat-label">Sem Conversão</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="thumbsUp" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.ctr || a.insights?.ctr) > 1).length}</div><div className="stat-label">CTR {'>'} 1%</div></div>
+                  <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="thumbsDown" size={18} /></div></div><div className="stat-value">{ads.filter(a => (a.metrics?.spend || a.insights?.spend) > 50 && (a.metrics?.conversions || a.insights?.conversions) === 0).length}</div><div className="stat-label">Sem Conversão</div></div>
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:16}}>
-                  {ads.length > 0 ? ads.map(ad => { const isGood = ad.insights?.conversions > 0 || ad.insights?.ctr > 1; const isBad = ad.insights?.spend > 50 && ad.insights?.conversions === 0; return (<div key={ad.id} style={{background:'var(--bg-subtle)',border:`1px solid ${isBad ? 'rgba(239,68,68,0.3)' : isGood ? 'rgba(16,185,129,0.3)' : 'var(--border-subtle)'}`,borderRadius:'var(--radius-lg)',overflow:'hidden',transition:'all 0.2s'}}><div style={{height:160,background:'var(--bg-muted)',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>{ad.creative?.thumbnail ? (<img src={ad.creative.thumbnail} alt={ad.name} style={{width:'100%',height:'100%',objectFit:'cover'}} />) : (<Icon name="image" size={40} style={{color:'var(--text-faint)'}} />)}<div style={{position:'absolute',top:8,right:8,padding:'4px 8px',borderRadius:6,fontSize:10,fontWeight:600,background: ad.effectiveStatus === 'ACTIVE' ? 'var(--accent-primary)' : 'var(--bg-elevated)',color: ad.effectiveStatus === 'ACTIVE' ? 'white' : 'var(--text-muted)'}}>{ad.effectiveStatus === 'ACTIVE' ? 'ATIVO' : 'PAUSADO'}</div>{(isGood || isBad) && (<div style={{position:'absolute',top:8,left:8,width:28,height:28,borderRadius:14,background: isGood ? 'var(--accent-primary)' : 'var(--accent-danger)',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name={isGood ? 'trendingUp' : 'trendingDown'} size={14} style={{color:'white'}} /></div>)}</div><div style={{padding:14}}><h4 style={{fontSize:13,fontWeight:600,marginBottom:8,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ad.name}</h4><div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}><div><div style={{fontSize:11,color:'var(--text-muted)'}}>Gasto</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{fmt.money(ad.insights?.spend || 0)}</div></div><div><div style={{fontSize:11,color:'var(--text-muted)'}}>CTR</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: ad.insights?.ctr > 1 ? 'var(--accent-primary)' : ad.insights?.ctr < 0.5 ? 'var(--accent-danger)' : 'inherit'}}>{fmt.pct(ad.insights?.ctr || 0)}</div></div><div><div style={{fontSize:11,color:'var(--text-muted)'}}>Conversões</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: ad.insights?.conversions > 0 ? 'var(--accent-primary)' : 'inherit'}}>{ad.insights?.conversions || 0}</div></div><div><div style={{fontSize:11,color:'var(--text-muted)'}}>CPA</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{ad.insights?.cpa > 0 ? fmt.money(ad.insights.cpa) : '-'}</div></div></div></div></div>); }) : (<div style={{gridColumn:'1/-1',textAlign:'center',padding:50}}><Icon name="layers" size={48} style={{color:'var(--text-faint)',marginBottom:16}} /><h3 style={{fontSize:16,fontWeight:600,marginBottom:6}}>Nenhum anúncio encontrado</h3><p style={{fontSize:13,color:'var(--text-muted)'}}>Os anúncios aparecerão aqui quando disponíveis</p></div>)}
+                  {ads.length > 0 ? ads.map(ad => { 
+                    const m = ad.metrics || ad.insights || {};
+                    const isGood = m.conversions > 0 || m.ctr > 1; 
+                    const isBad = m.spend > 50 && m.conversions === 0;
+                    const imageUrl = ad.creative?.imageUrl || ad.creative?.thumbnail;
+                    return (
+                      <div key={ad.id} style={{background:'var(--bg-subtle)',border:`1px solid ${isBad ? 'rgba(239,68,68,0.3)' : isGood ? 'rgba(16,185,129,0.3)' : 'var(--border-subtle)'}`,borderRadius:'var(--radius-lg)',overflow:'hidden',transition:'all 0.2s'}}>
+                        <div style={{height:160,background:'var(--bg-muted)',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
+                          {imageUrl ? (<img src={imageUrl} alt={ad.name} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={(e) => { e.target.style.display = 'none'; }} />) : (<Icon name="image" size={40} style={{color:'var(--text-faint)'}} />)}
+                          <div style={{position:'absolute',top:8,right:8,padding:'4px 8px',borderRadius:6,fontSize:10,fontWeight:600,background: ad.effectiveStatus === 'ACTIVE' ? 'var(--accent-primary)' : 'var(--bg-elevated)',color: ad.effectiveStatus === 'ACTIVE' ? 'white' : 'var(--text-muted)'}}>{ad.effectiveStatus === 'ACTIVE' ? 'ATIVO' : 'PAUSADO'}</div>
+                          {(isGood || isBad) && (<div style={{position:'absolute',top:8,left:8,width:28,height:28,borderRadius:14,background: isGood ? 'var(--accent-primary)' : 'var(--accent-danger)',display:'flex',alignItems:'center',justifyContent:'center'}}><Icon name={isGood ? 'trendingUp' : 'trendingDown'} size={14} style={{color:'white'}} /></div>)}
+                          {ad.score && (<div style={{position:'absolute',bottom:8,left:8,padding:'4px 8px',borderRadius:6,fontSize:11,fontWeight:700,background:'rgba(0,0,0,0.7)',color: AIEngine.getStatus(ad.score).color}}>{ad.score}</div>)}
+                        </div>
+                        <div style={{padding:14}}>
+                          <h4 style={{fontSize:13,fontWeight:600,marginBottom:8,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ad.name}</h4>
+                          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                            <div><div style={{fontSize:11,color:'var(--text-muted)'}}>Gasto</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{fmt.money(m.spend || 0)}</div></div>
+                            <div><div style={{fontSize:11,color:'var(--text-muted)'}}>CTR</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: m.ctr > 1 ? 'var(--accent-primary)' : m.ctr < 0.5 ? 'var(--accent-danger)' : 'inherit'}}>{fmt.pct(m.ctr || 0)}</div></div>
+                            <div><div style={{fontSize:11,color:'var(--text-muted)'}}>Conversões</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)',color: m.conversions > 0 ? 'var(--accent-primary)' : 'inherit'}}>{m.conversions || 0}</div></div>
+                            <div><div style={{fontSize:11,color:'var(--text-muted)'}}>CPA</div><div style={{fontSize:14,fontWeight:600,fontFamily:'var(--font-mono)'}}>{m.cpa > 0 ? fmt.money(m.cpa) : '-'}</div></div>
+                          </div>
+                        </div>
+                      </div>
+                    ); 
+                  }) : (<div style={{gridColumn:'1/-1',textAlign:'center',padding:50}}><Icon name="layers" size={48} style={{color:'var(--text-faint)',marginBottom:16}} /><h3 style={{fontSize:16,fontWeight:600,marginBottom:6}}>Nenhum anúncio encontrado</h3><p style={{fontSize:13,color:'var(--text-muted)'}}>Os anúncios aparecerão aqui quando disponíveis</p></div>)}
                 </div>
               </>
             ) : page === 'insights' ? (
