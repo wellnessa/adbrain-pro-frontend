@@ -390,7 +390,54 @@ body { font-family: var(--font-sans); background: var(--bg-base); color: var(--t
 .audience-segment-cpa { font-size: 14px; font-weight: 700; font-family: var(--font-mono); }
 .audience-segment-conv { font-size: 11px; color: var(--text-muted); }
 
-@media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 50px 1fr 85px 85px 100px; } .audience-grid { grid-template-columns: 1fr; } }
+.insights-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.insights-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 20px; }
+.insights-card-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.insights-card.full-width { grid-column: 1 / -1; }
+
+.health-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.health-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; text-align: center; }
+.health-card-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+.health-card-value { font-size: 22px; font-weight: 700; font-family: var(--font-mono); margin-bottom: 4px; }
+.health-card-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.health-card-trend { font-size: 11px; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+.insight-item { display: flex; gap: 14px; padding: 14px; background: var(--bg-muted); border-radius: var(--radius-md); margin-bottom: 10px; border-left: 3px solid var(--border-muted); }
+.insight-item.critical { border-left-color: var(--accent-danger); background: var(--accent-danger-muted); }
+.insight-item.warning { border-left-color: var(--accent-warning); background: var(--accent-warning-muted); }
+.insight-item.success { border-left-color: var(--accent-primary); background: var(--accent-primary-muted); }
+.insight-item.info { border-left-color: var(--accent-info); background: var(--accent-info-muted); }
+.insight-item-icon { width: 36px; height: 36px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.insight-item.critical .insight-item-icon { background: var(--accent-danger); color: white; }
+.insight-item.warning .insight-item-icon { background: var(--accent-warning); color: white; }
+.insight-item.success .insight-item-icon { background: var(--accent-primary); color: white; }
+.insight-item.info .insight-item-icon { background: var(--accent-info); color: white; }
+.insight-item-content { flex: 1; }
+.insight-item-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.insight-item-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.insight-item-action { margin-top: 8px; }
+
+.recommendation-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--bg-muted); border-radius: var(--radius-md); margin-bottom: 10px; }
+.recommendation-number { width: 28px; height: 28px; background: var(--accent-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.recommendation-content { flex: 1; }
+.recommendation-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.recommendation-desc { font-size: 12px; color: var(--text-muted); }
+.recommendation-impact { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 4px 8px; background: var(--accent-primary-muted); color: var(--accent-primary); border-radius: 4px; font-size: 11px; font-weight: 600; }
+
+.score-overview { display: flex; align-items: center; gap: 24px; padding: 20px; background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(59,130,246,0.08) 100%); border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-lg); margin-bottom: 24px; }
+.score-overview-ring { flex-shrink: 0; }
+.score-overview-content { flex: 1; }
+.score-overview-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.score-overview-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+.score-overview-bars { display: flex; gap: 16px; }
+.score-mini-bar { flex: 1; }
+.score-mini-bar-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+.score-mini-bar-label { color: var(--text-muted); }
+.score-mini-bar-value { font-weight: 600; }
+.score-mini-bar-track { height: 4px; background: var(--bg-elevated); border-radius: 2px; overflow: hidden; }
+.score-mini-bar-fill { height: 100%; border-radius: 2px; }
+
+@media (max-width: 1400px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .campaign-main { grid-template-columns: 50px 1fr 85px 85px 100px; } .audience-grid { grid-template-columns: 1fr; } .health-grid { grid-template-columns: repeat(2, 1fr); } .insights-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1200px) { .settings-grid { grid-template-columns: 1fr; } .score-breakdown { grid-template-columns: repeat(2, 1fr); } }
 `;
 
@@ -732,7 +779,83 @@ export default function App() {
 
   const summary = useMemo(() => AIEngine.getSummary(campaigns), [campaigns]);
   const filterCounts = useMemo(() => ({ all: campaigns.length, active: campaigns.filter(c => c.effectiveStatus === 'ACTIVE').length, paused: campaigns.filter(c => c.effectiveStatus === 'PAUSED').length, critical: campaigns.filter(c => c.score?.total < 40).length, scale: campaigns.filter(c => c.score?.total >= 75 && c.insights?.conversions > 0).length }), [campaigns]);
-><div className="stat-label">Conversões</div></div>
+
+  // Análise avançada da conta para página de Insights
+  const accountAnalysis = useMemo(() => {
+    const cfg = AIEngine.config;
+    const totalSpend = stats.spend;
+    const totalConversions = stats.conversions;
+    const avgCPA = stats.cpa;
+    const avgCTR = stats.ctr;
+    const avgScore = campaigns.length > 0 ? Math.round(campaigns.reduce((s, c) => s + (c.score?.total || 0), 0) / campaigns.length) : 0;
+    
+    // Health Score
+    let healthScore = 50;
+    if (avgCPA > 0 && avgCPA < cfg.metaCPA) healthScore += 20;
+    else if (avgCPA > cfg.metaCPA * 1.5) healthScore -= 20;
+    if (avgCTR > cfg.ctrMinimo) healthScore += 15;
+    else if (avgCTR < cfg.ctrMinimo * 0.5) healthScore -= 15;
+    if (summary.scalable > 0) healthScore += 10;
+    if (summary.critical > 0) healthScore -= summary.critical * 5;
+    healthScore = Math.max(0, Math.min(100, healthScore));
+
+    // Insights prioritizados
+    const insights = [];
+    
+    if (summary.critical > 0) {
+      insights.push({ type: 'critical', icon: 'alertTriangle', title: `${summary.critical} Campanha${summary.critical > 1 ? 's' : ''} em Estado Crítico`, desc: `Você está desperdiçando ${fmt.money(summary.wastedSpend)} em campanhas com baixo desempenho. Pause ou otimize urgentemente.` });
+    }
+    
+    if (avgCPA > cfg.metaCPA * 1.5 && totalConversions > 0) {
+      insights.push({ type: 'warning', icon: 'dollarSign', title: 'CPA Acima da Meta', desc: `Seu CPA médio de ${fmt.money(avgCPA)} está ${Math.round((avgCPA / cfg.metaCPA - 1) * 100)}% acima da meta de ${fmt.money(cfg.metaCPA)}.` });
+    }
+    
+    if (avgCTR < cfg.ctrMinimo * 0.7 && stats.impressions > 1000) {
+      insights.push({ type: 'warning', icon: 'image', title: 'CTR Precisa de Atenção', desc: `CTR médio de ${fmt.pct(avgCTR)} está baixo. Considere renovar seus criativos.` });
+    }
+    
+    if (summary.scalable > 0) {
+      insights.push({ type: 'success', icon: 'rocket', title: `${summary.scalable} Campanha${summary.scalable > 1 ? 's' : ''} Pronta${summary.scalable > 1 ? 's' : ''} para Escalar`, desc: `Essas campanhas têm CPA abaixo da meta e bom desempenho. Aumente o orçamento em 20-30%.` });
+    }
+    
+    if (avgCPA > 0 && avgCPA < cfg.metaCPA * 0.7 && totalConversions >= 5) {
+      insights.push({ type: 'success', icon: 'trendingUp', title: 'CPA Excelente!', desc: `Seu CPA médio de ${fmt.money(avgCPA)} está ${Math.round((1 - avgCPA / cfg.metaCPA) * 100)}% abaixo da meta. Ótimo trabalho!` });
+    }
+
+    if (campaigns.filter(c => c.effectiveStatus === 'PAUSED').length > campaigns.filter(c => c.effectiveStatus === 'ACTIVE').length) {
+      insights.push({ type: 'info', icon: 'pause', title: 'Muitas Campanhas Pausadas', desc: `Você tem mais campanhas pausadas do que ativas. Revise se há oportunidades de reativação.` });
+    }
+
+    // Recomendações acionáveis
+    const recommendations = [];
+    
+    if (summary.critical > 0) {
+      recommendations.push({ icon: 'pause', title: 'Pausar Campanhas Críticas', desc: 'Pare imediatamente as campanhas com score abaixo de 30 para evitar desperdício.', impact: `Economia: ${fmt.money(summary.wastedSpend)}` });
+    }
+    
+    if (summary.scalable > 0) {
+      recommendations.push({ icon: 'trendingUp', title: 'Escalar Campanhas Vencedoras', desc: 'Aumente o orçamento das campanhas com score acima de 75 em 20-30%.', impact: 'Potencial: +30% conversões' });
+    }
+    
+    if (avgCTR < cfg.ctrMinimo) {
+      recommendations.push({ icon: 'image', title: 'Renovar Criativos', desc: 'Teste novos formatos de anúncios e copies para melhorar o CTR.', impact: 'Meta: CTR > 1%' });
+    }
+    
+    if (campaigns.length > 0 && campaigns.every(c => (c.insights?.frequency || 0) > cfg.frequenciaMaxima)) {
+      recommendations.push({ icon: 'users', title: 'Expandir Audiência', desc: 'A frequência está alta. Adicione novos públicos para evitar saturação.', impact: 'Reduzir frequência' });
+    }
+
+    if (breakdown?.age?.length > 0) {
+      const bestAge = [...(breakdown.age || [])].sort((a, b) => (a.cpa || 999) - (b.cpa || 999))[0];
+      if (bestAge && bestAge.cpa > 0) {
+        recommendations.push({ icon: 'target', title: `Focar na Faixa ${bestAge.age}`, desc: `Esta faixa etária tem o melhor CPA (${fmt.money(bestAge.cpa)}). Considere aumentar o investimento.`, impact: 'Otimizar audiência' });
+      }
+    }
+
+    return { healthScore, avgScore, insights, recommendations };
+  }, [campaigns, stats, summary, breakdown]);
+
+  // LOGIN/REGISTER/FORGOT
                   <div className="stat-card"><div className="stat-header"><div className="stat-icon yellow"><Icon name="target" size={18} /></div></div><div className="stat-value">{stats.cpa > 0 ? fmt.money(stats.cpa) : '-'}</div><div className="stat-label">CPA Médio</div></div>
                   <div className="stat-card"><div className="stat-header"><div className="stat-icon red"><Icon name="activity" size={18} /></div></div><div className="stat-value">{fmt.pct(stats.ctr)}</div><div className="stat-label">CTR Médio</div></div>
                 </div>
@@ -981,13 +1104,152 @@ export default function App() {
                 </div>
               </>
             ) : page === 'insights' ? (
-              <>
-                <div className="ai-summary"><div className="ai-icon"><Icon name="sparkles" size={22} /></div><div className="ai-content"><div className="ai-header"><span className="ai-title">Análise da Conta</span><span className="ai-badge">IA</span></div><p className="ai-text">Você tem <strong>{campaigns.length} campanhas</strong>. {summary.critical > 0 && <><strong className="danger">{summary.critical}</strong> precisam de atenção.</>} {summary.scalable > 0 && <><strong className="success">{summary.scalable}</strong> podem ser escaladas.</>}</p></div></div>
-                <h3 style={{fontSize:15,fontWeight:600,marginBottom:16}}>Problemas Detectados</h3>
-                <div className="issues-grid" style={{marginBottom:28}}>{campaigns.flatMap(c => (c.analysis?.issues || []).map((issue,i) => <div key={`${c.id}-${i}`} className={`issue-card ${issue.severity}`}><div className="issue-icon"><Icon name={issue.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{issue.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {issue.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.issues?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="checkCircle" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Nenhum problema detectado.</div></div>}</div>
-                <h3 style={{fontSize:15,fontWeight:600,marginBottom:16}}>Oportunidades</h3>
-                <div className="issues-grid">{campaigns.flatMap(c => (c.analysis?.opportunities || []).map((opp,i) => <div key={`${c.id}-o-${i}`} className="issue-card opportunity"><div className="issue-icon"><Icon name={opp.icon} size={18} /></div><div className="issue-content"><div className="issue-title">{opp.title}</div><div className="issue-desc"><strong>{c.name}:</strong> {opp.desc}</div></div></div>)).slice(0,6)}{campaigns.every(c => !c.analysis?.opportunities?.length) && <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}><Icon name="lightbulb" size={40} style={{marginBottom:12,opacity:0.5}} /><div>Melhore as campanhas para desbloquear oportunidades.</div></div>}</div>
-              </>
+              <div className="animate-fade">
+                {/* Score Overview */}
+                <div className="score-overview">
+                  <div className="score-overview-ring">
+                    <ScoreRing score={accountAnalysis.healthScore} size={72} />
+                  </div>
+                  <div className="score-overview-content">
+                    <div className="score-overview-title">
+                      {accountAnalysis.healthScore >= 70 ? '🎯 Conta Saudável' : accountAnalysis.healthScore >= 40 ? '⚠️ Atenção Necessária' : '🚨 Ação Urgente'}
+                    </div>
+                    <div className="score-overview-subtitle">
+                      {campaigns.length} campanhas • Score médio: {accountAnalysis.avgScore}/100 • {fmt.money(stats.spend)} investidos
+                    </div>
+                    <div className="score-overview-bars">
+                      <div className="score-mini-bar">
+                        <div className="score-mini-bar-header">
+                          <span className="score-mini-bar-label">CPA</span>
+                          <span className="score-mini-bar-value" style={{color: stats.cpa < AIEngine.config.metaCPA ? 'var(--accent-primary)' : stats.cpa > AIEngine.config.metaCPA * 1.5 ? 'var(--accent-danger)' : 'var(--accent-warning)'}}>{stats.cpa > 0 ? fmt.money(stats.cpa) : '-'}</span>
+                        </div>
+                        <div className="score-mini-bar-track">
+                          <div className="score-mini-bar-fill" style={{width: `${Math.min(100, stats.cpa > 0 ? (AIEngine.config.metaCPA / stats.cpa * 100) : 0)}%`, background: stats.cpa < AIEngine.config.metaCPA ? 'var(--accent-primary)' : 'var(--accent-danger)'}}></div>
+                        </div>
+                      </div>
+                      <div className="score-mini-bar">
+                        <div className="score-mini-bar-header">
+                          <span className="score-mini-bar-label">CTR</span>
+                          <span className="score-mini-bar-value" style={{color: stats.ctr > AIEngine.config.ctrMinimo ? 'var(--accent-primary)' : 'var(--accent-warning)'}}>{fmt.pct(stats.ctr)}</span>
+                        </div>
+                        <div className="score-mini-bar-track">
+                          <div className="score-mini-bar-fill" style={{width: `${Math.min(100, stats.ctr / AIEngine.config.ctrMinimo * 50)}%`, background: stats.ctr > AIEngine.config.ctrMinimo ? 'var(--accent-primary)' : 'var(--accent-warning)'}}></div>
+                        </div>
+                      </div>
+                      <div className="score-mini-bar">
+                        <div className="score-mini-bar-header">
+                          <span className="score-mini-bar-label">Conversões</span>
+                          <span className="score-mini-bar-value">{stats.conversions}</span>
+                        </div>
+                        <div className="score-mini-bar-track">
+                          <div className="score-mini-bar-fill" style={{width: `${Math.min(100, stats.conversions * 10)}%`, background: 'var(--accent-info)'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Health Metrics */}
+                <div className="health-grid">
+                  <div className="health-card">
+                    <div className="health-card-icon" style={{background: 'var(--accent-primary-muted)', color: 'var(--accent-primary)'}}><Icon name="dollarSign" size={20} /></div>
+                    <div className="health-card-value" style={{color: stats.cpa < AIEngine.config.metaCPA ? 'var(--accent-primary)' : stats.cpa > AIEngine.config.metaCPA * 1.5 ? 'var(--accent-danger)' : 'inherit'}}>{stats.cpa > 0 ? fmt.money(stats.cpa) : '-'}</div>
+                    <div className="health-card-label">CPA Médio</div>
+                    <div className="health-card-trend" style={{color: stats.cpa < AIEngine.config.metaCPA ? 'var(--accent-primary)' : 'var(--accent-danger)'}}>
+                      <Icon name={stats.cpa < AIEngine.config.metaCPA ? 'trendingDown' : 'trendingUp'} size={12} />
+                      Meta: {fmt.money(AIEngine.config.metaCPA)}
+                    </div>
+                  </div>
+                  <div className="health-card">
+                    <div className="health-card-icon" style={{background: 'var(--accent-info-muted)', color: 'var(--accent-info)'}}><Icon name="activity" size={20} /></div>
+                    <div className="health-card-value">{fmt.pct(stats.ctr)}</div>
+                    <div className="health-card-label">CTR Médio</div>
+                    <div className="health-card-trend" style={{color: stats.ctr > AIEngine.config.ctrMinimo ? 'var(--accent-primary)' : 'var(--accent-warning)'}}>
+                      <Icon name={stats.ctr > AIEngine.config.ctrMinimo ? 'trendingUp' : 'trendingDown'} size={12} />
+                      Meta: {AIEngine.config.ctrMinimo}%
+                    </div>
+                  </div>
+                  <div className="health-card">
+                    <div className="health-card-icon" style={{background: 'var(--accent-primary-muted)', color: 'var(--accent-primary)'}}><Icon name="checkCircle" size={20} /></div>
+                    <div className="health-card-value">{stats.conversions}</div>
+                    <div className="health-card-label">Conversões</div>
+                    <div className="health-card-trend" style={{color: 'var(--text-muted)'}}>
+                      {fmt.money(stats.spend)} investidos
+                    </div>
+                  </div>
+                  <div className="health-card">
+                    <div className="health-card-icon" style={{background: summary.critical > 0 ? 'var(--accent-danger-muted)' : 'var(--accent-primary-muted)', color: summary.critical > 0 ? 'var(--accent-danger)' : 'var(--accent-primary)'}}><Icon name={summary.critical > 0 ? 'alertTriangle' : 'rocket'} size={20} /></div>
+                    <div className="health-card-value">{summary.critical > 0 ? summary.critical : summary.scalable}</div>
+                    <div className="health-card-label">{summary.critical > 0 ? 'Críticas' : 'Para Escalar'}</div>
+                    <div className="health-card-trend" style={{color: summary.critical > 0 ? 'var(--accent-danger)' : 'var(--accent-primary)'}}>
+                      {summary.critical > 0 ? `${fmt.money(summary.wastedSpend)} desperdiçado` : 'Pronto para crescer'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="insights-grid">
+                  {/* Insights Prioritizados */}
+                  <div className="insights-card">
+                    <div className="insights-card-title"><Icon name="sparkles" size={18} />Insights Prioritizados</div>
+                    {accountAnalysis.insights.length > 0 ? accountAnalysis.insights.map((ins, i) => (
+                      <div key={i} className={`insight-item ${ins.type}`}>
+                        <div className="insight-item-icon"><Icon name={ins.icon} size={18} /></div>
+                        <div className="insight-item-content">
+                          <div className="insight-item-title">{ins.title}</div>
+                          <div className="insight-item-desc">{ins.desc}</div>
+                        </div>
+                      </div>
+                    )) : (
+                      <div style={{textAlign:'center',padding:30,color:'var(--text-muted)'}}>
+                        <Icon name="checkCircle" size={40} style={{marginBottom:12,opacity:0.5}} />
+                        <div>Nenhum insight no momento. Continue monitorando!</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Recomendações */}
+                  <div className="insights-card">
+                    <div className="insights-card-title"><Icon name="lightbulb" size={18} />Recomendações</div>
+                    {accountAnalysis.recommendations.length > 0 ? accountAnalysis.recommendations.map((rec, i) => (
+                      <div key={i} className="recommendation-card">
+                        <div className="recommendation-number">{i + 1}</div>
+                        <div className="recommendation-content">
+                          <div className="recommendation-title"><Icon name={rec.icon} size={14} style={{marginRight:6}} />{rec.title}</div>
+                          <div className="recommendation-desc">{rec.desc}</div>
+                          <div className="recommendation-impact"><Icon name="zap" size={12} />{rec.impact}</div>
+                        </div>
+                      </div>
+                    )) : (
+                      <div style={{textAlign:'center',padding:30,color:'var(--text-muted)'}}>
+                        <Icon name="thumbsUp" size={40} style={{marginBottom:12,opacity:0.5}} />
+                        <div>Tudo otimizado! Nenhuma recomendação no momento.</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Problemas por Campanha */}
+                  <div className="insights-card full-width">
+                    <div className="insights-card-title"><Icon name="alertTriangle" size={18} />Problemas por Campanha</div>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))',gap:12}}>
+                      {campaigns.flatMap(c => (c.analysis?.issues || []).map((issue, i) => (
+                        <div key={`${c.id}-${i}`} className={`insight-item ${issue.severity}`}>
+                          <div className="insight-item-icon"><Icon name={issue.icon} size={16} /></div>
+                          <div className="insight-item-content">
+                            <div className="insight-item-title">{issue.title}</div>
+                            <div className="insight-item-desc"><strong>{c.name}:</strong> {issue.desc}</div>
+                          </div>
+                        </div>
+                      ))).slice(0, 6)}
+                      {campaigns.every(c => !c.analysis?.issues?.length) && (
+                        <div style={{gridColumn:'1/-1',textAlign:'center',padding:30,color:'var(--text-muted)'}}>
+                          <Icon name="checkCircle" size={40} style={{marginBottom:12,opacity:0.5}} />
+                          <div>Nenhum problema detectado nas campanhas! 🎉</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="empty-state"><Icon name="image" size={48} className="empty-icon" /><h3 className="empty-title">Em breve</h3><p className="empty-text">Seção em desenvolvimento.</p></div>
             )}
